@@ -45,24 +45,24 @@ func SetupApiRules(rules map[string]ApiRule) {
 	}
 }
 
-// func getApiRuleIds(patterns ...string) []string {
-// 	ids := []string{}
-// 	ruleMap := make(map[string]bool)
-// 	for _, pattern := range patterns {
-// 		pattern = strings.ReplaceAll(pattern, ".", "\\.")
-// 		pattern = strings.ReplaceAll(pattern, "*", ".*")
-// 		re := regexp.MustCompile(pattern)
-// 		for id, _ := range apiRulesMap {
-// 			if re.Match([]byte(id)) {
-// 				if _, ok := ruleMap[id]; !ok {
-// 					ruleMap[id] = true
-// 					ids = append(ids, id)
-// 				}
-// 			}
-// 		}
-// 	}
-// 	return ids
-// }
+func GetApiRuleIds(patterns ...string) []string {
+	ids := []string{}
+	ruleMap := make(map[string]bool)
+	for _, pattern := range patterns {
+		pattern = strings.ReplaceAll(pattern, ".", "\\.")
+		pattern = strings.ReplaceAll(pattern, "*", ".*")
+		re := regexp.MustCompile(pattern)
+		for id, _ := range apiRulesMap {
+			if re.Match([]byte(id)) {
+				if _, ok := ruleMap[id]; !ok {
+					ruleMap[id] = true
+					ids = append(ids, id)
+				}
+			}
+		}
+	}
+	return ids
+}
 
 func GetApiRules(patterns ...string) []ApiRule {
 	rules := []ApiRule{}
