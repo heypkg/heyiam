@@ -39,7 +39,7 @@ var apiRulesMap = map[string]ApiRule{
 	"api.iam.audit-logs.get":  {Method: "GET", Path: "/api/v1/iam/audit-logs/:ts"},
 }
 
-func SetupApiRules(rules map[string]ApiRule) {
+func setupApiRules(rules map[string]ApiRule) {
 	for key, rule := range rules {
 		apiRulesMap[key] = rule
 	}

@@ -20,9 +20,8 @@ func GetLogger() *zap.Logger {
 }
 
 func Setup(db *gorm.DB, dataRetentionPeriod time.Duration,
-	enforcerDriverName string, enforcerDataSourceName string) {
+	enforcerDriverName string, enforcerDataSourceName string, rules map[string]ApiRule) {
 
-	setupEnforcer(enforcerDriverName, enforcerDataSourceName)
 	defaultDB = db
 	db.AutoMigrate(&Role{}, &User{})
 	db.AutoMigrate(&AuditLog{})
@@ -31,6 +30,9 @@ func Setup(db *gorm.DB, dataRetentionPeriod time.Duration,
 	tsdb.CreateHyperTableCountView(db, "audit_logs", "audit_logs_daily_view", "1d", AuditLogIndexNames)
 	tsdb.CreateHyperTableCountView(db, "audit_logs", "audit_logs_device_hourly_view", "1h", AuditLogUserIndexNames)
 	tsdb.CreateHyperTableCountView(db, "audit_logs", "audit_logs_device_daily_view", "1d", AuditLogUserIndexNames)
+
+	setupEnforcer(enforcerDriverName, enforcerDataSourceName)
+	setupApiRules(rules)
 }
 
 func SetupAdmin(db *gorm.DB, schema string, password string) error {
