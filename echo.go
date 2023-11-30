@@ -5,6 +5,15 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+// @title IAM API
+// @version 1.0
+// @host dev.netdoop.com
+// @BasePath /api/v1
+// @schemes http
+// @securityDefinitions.apikey Bearer
+// @in header
+// @name Authorization
+// @description Type "Bearer" followed by a space and JWT token.
 func SetupEchoGroup(group *echo.Group) *echo.Group {
 	db := GetDB()
 

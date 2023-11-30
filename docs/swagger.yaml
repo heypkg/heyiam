@@ -1,3 +1,4 @@
+basePath: /api/v1
 definitions:
   echo.HTTPError:
     properties:
@@ -208,8 +209,11 @@ definitions:
   jsontype.Tags:
     additionalProperties: {}
     type: object
+host: dev.netdoop.com
 info:
   contact: {}
+  title: IAM API
+  version: "1.0"
 paths:
   /auth:
     post:
@@ -421,7 +425,7 @@ paths:
       - Bearer: []
       summary: List roles
       tags:
-      - IAM Roles
+      - Roles
     post:
       operationId: create-role
       parameters:
@@ -452,7 +456,7 @@ paths:
       - Bearer: []
       summary: Create a role
       tags:
-      - IAM Roles
+      - Roles
   /iam/roles/{id}:
     delete:
       operationId: delete-role
@@ -477,7 +481,7 @@ paths:
       - Bearer: []
       summary: Delete role
       tags:
-      - IAM Roles
+      - Roles
     get:
       operationId: get-role
       parameters:
@@ -503,7 +507,7 @@ paths:
       - Bearer: []
       summary: Get role
       tags:
-      - IAM Roles
+      - Roles
     put:
       operationId: update-role
       parameters:
@@ -539,7 +543,7 @@ paths:
       - Bearer: []
       summary: Update role
       tags:
-      - IAM Roles
+      - Roles
   /iam/roles/{id}/disable:
     put:
       operationId: set-role-disable
@@ -570,7 +574,7 @@ paths:
       - Bearer: []
       summary: Set role disable
       tags:
-      - IAM Roles
+      - Roles
   /iam/roles/{id}/enable:
     put:
       operationId: set-role-enable
@@ -601,7 +605,7 @@ paths:
       - Bearer: []
       summary: Set role enable
       tags:
-      - IAM Roles
+      - Roles
   /iam/roles/{id}/rules:
     put:
       operationId: set-role-rules
@@ -638,7 +642,7 @@ paths:
       - Bearer: []
       summary: Set rules for role
       tags:
-      - IAM Roles
+      - Roles
   /iam/rules:
     get:
       operationId: list-rules
@@ -655,7 +659,7 @@ paths:
       - Bearer: []
       summary: List rules
       tags:
-      - IAM Rules
+      - Rules
   /iam/users:
     get:
       operationId: list-users
@@ -699,7 +703,7 @@ paths:
       - Bearer: []
       summary: List users
       tags:
-      - IAM Users
+      - Users
     post:
       operationId: create-user
       parameters:
@@ -732,7 +736,7 @@ paths:
       - Bearer: []
       summary: Create user
       tags:
-      - IAM Users
+      - Users
   /iam/users/{id}:
     delete:
       operationId: delete-user
@@ -767,7 +771,7 @@ paths:
       - Bearer: []
       summary: Delete user
       tags:
-      - IAM Users
+      - Users
     get:
       operationId: get-user
       parameters:
@@ -799,7 +803,7 @@ paths:
       - Bearer: []
       summary: Get user
       tags:
-      - IAM Users
+      - Users
     put:
       operationId: update-user
       parameters:
@@ -841,7 +845,7 @@ paths:
       - Bearer: []
       summary: Update user
       tags:
-      - IAM Users
+      - Users
   /iam/users/{id}/change-password:
     put:
       operationId: change-user-password
@@ -884,7 +888,7 @@ paths:
       - Bearer: []
       summary: Change user password
       tags:
-      - IAM Users
+      - Users
   /iam/users/{id}/disable:
     put:
       operationId: set-user-disable
@@ -915,7 +919,7 @@ paths:
       - Bearer: []
       summary: Set user disable
       tags:
-      - IAM Users
+      - Users
   /iam/users/{id}/enable:
     put:
       operationId: set-user-enable
@@ -946,7 +950,7 @@ paths:
       - Bearer: []
       summary: Set user enable
       tags:
-      - IAM Users
+      - Users
   /iam/users/{id}/reset-password:
     put:
       operationId: reset-user-password
@@ -979,7 +983,7 @@ paths:
       - Bearer: []
       summary: Reset user password
       tags:
-      - IAM Users
+      - Users
   /iam/users/{id}/roles:
     get:
       operationId: get-user-roles
@@ -1008,7 +1012,7 @@ paths:
       - Bearer: []
       summary: Get roles for user
       tags:
-      - IAM Users
+      - Users
     post:
       operationId: add-user-roles
       parameters:
@@ -1044,7 +1048,7 @@ paths:
       - Bearer: []
       summary: Add roles for user
       tags:
-      - IAM Users
+      - Users
     put:
       operationId: set-user-roles
       parameters:
@@ -1080,5 +1084,13 @@ paths:
       - Bearer: []
       summary: Set roles for user
       tags:
-      - IAM Users
+      - Users
+schemes:
+- http
+securityDefinitions:
+  Bearer:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

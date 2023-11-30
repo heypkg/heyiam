@@ -20,7 +20,7 @@ type listUsersData struct {
 // HandleListUsers lists users based on specified filters.
 // @Summary List users
 // @ID list-users
-// @Tags IAM Users
+// @Tags Users
 // @Produce json
 // @Param page query int false "Page" default(1)
 // @Param page_size query int false "Page size" default(20)
@@ -55,7 +55,7 @@ type createUserBody struct {
 // HandleCreateUser creates a new user.
 // @Summary Create user
 // @ID create-user
-// @Tags IAM Users
+// @Tags Users
 // @Produce json
 // @Security Bearer
 // @Param body body createUserBody true "User"
@@ -88,7 +88,7 @@ func HandleCreateUser(c echo.Context) error {
 // HandleGetUser retrieves a single user from the database.
 // @Summary Get user
 // @ID get-user
-// @Tags IAM Users
+// @Tags Users
 // @Produce json
 // @Security Bearer
 // @Param id path int true "User ID"
@@ -109,7 +109,7 @@ type updateUserBody struct {
 // HandleUpdateUser updates a user
 // @Summary Update user
 // @ID update-user
-// @Tags IAM Users
+// @Tags Users
 // @Produce json
 // @Security Bearer
 // @Param id path int true "User ID"
@@ -143,7 +143,7 @@ func HandleUpdateUser(c echo.Context) error {
 
 // HandleGetUserRoles godoc
 // @Summary Get roles for user
-// @Tags IAM Users
+// @Tags Users
 // @ID get-user-roles
 // @Security Bearer
 // @Param id path int true "User ID"
@@ -162,7 +162,7 @@ type addUserRolesBody struct {
 
 // HandleAddUserRoles godoc
 // @Summary Add roles for user
-// @Tags IAM Users
+// @Tags Users
 // @ID add-user-roles
 // @Security Bearer
 // @Param id path int true "User ID"
@@ -207,7 +207,7 @@ type setUserRoles struct {
 
 // HandleSetUserRoles godoc
 // @Summary Set roles for user
-// @Tags IAM Users
+// @Tags Users
 // @ID set-user-roles
 // @Security Bearer
 // @Param id path int true "User ID"
@@ -248,7 +248,7 @@ func HandleSetUserRoles(c echo.Context) error {
 
 // HandleSetUserEnable godoc
 // @Summary Set user enable
-// @Tags IAM Users
+// @Tags Users
 // @ID set-user-enable
 // @Security Bearer
 // @Param id path int true "User ID"
@@ -273,7 +273,7 @@ func HandleSetUserEnable(c echo.Context) error {
 
 // HandleSetUserDisable godoc
 // @Summary Set user disable
-// @Tags IAM Users
+// @Tags Users
 // @ID set-user-disable
 // @Security Bearer
 // @Param id path int true "User ID"
@@ -299,7 +299,7 @@ func HandleSetUserDisable(c echo.Context) error {
 // HandleResetUserPassword resets a user's password
 // @Summary Reset user password
 // @ID reset-user-password
-// @Tags IAM Users
+// @Tags Users
 // @Produce json
 // @Security Bearer
 // @Param id path int true "User ID"
@@ -326,7 +326,7 @@ func HandleResetUserPassword(c echo.Context) error {
 // HandleChangeUserPassword changes a user's password.
 // @Summary Change user password
 // @ID change-user-password
-// @Tags IAM Users
+// @Tags Users
 // @Produce json
 // @Security Bearer
 // @Param id path int true "User ID"
@@ -359,7 +359,7 @@ func HandleChangeUserPassword(c echo.Context) error {
 // HandleDeleteUser deletes a user.
 // @Summary Delete user
 // @ID delete-user
-// @Tags IAM Users
+// @Tags Users
 // @Produce json
 // @Security Bearer
 // @Param id path int true "User ID"

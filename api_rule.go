@@ -15,7 +15,7 @@ type listRulesBody struct {
 // HandleListApiRules godoc
 // @Summary List rules
 // @ID list-rules
-// @Tags IAM Rules
+// @Tags Rules
 // @Security Bearer
 // @Success 200 {object} listRulesBody
 // @Failure 500 {object} echo.HTTPError "Internal server error"

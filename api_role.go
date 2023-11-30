@@ -18,7 +18,7 @@ type listRolesData struct {
 // HandleListRoles godoc
 // @Summary List roles
 // @ID list-roles
-// @Tags IAM Roles
+// @Tags Roles
 // @Security Bearer
 // @Param page query int false "Page" default(1)
 // @Param page_size query int false "Page size" default(20)
@@ -44,7 +44,7 @@ type createRoleBody struct {
 
 // HandleCreateRole godoc
 // @Summary Create a role
-// @Tags IAM Roles
+// @Tags Roles
 // @ID create-role
 // @Security Bearer
 // @Param body body createRoleBody true "Create Role Body"
@@ -73,7 +73,7 @@ func HandleCreateRole(c echo.Context) error {
 
 // HandleGetRole godoc
 // @Summary Get role
-// @Tags IAM Roles
+// @Tags Roles
 // @ID get-role
 // @Security Bearer
 // @Param id path int true "Role ID"
@@ -92,7 +92,7 @@ type updateRoleBody struct {
 
 // HandleUpdateRole godoc
 // @Summary Update role
-// @Tags IAM Roles
+// @Tags Roles
 // @ID update-role
 // @Security Bearer
 // @Param id path int true "Role ID"
@@ -126,7 +126,7 @@ func HandleUpdateRole(c echo.Context) error {
 
 // HandleSetRoleEnable godoc
 // @Summary Set role enable
-// @Tags IAM Roles
+// @Tags Roles
 // @ID set-role-enable
 // @Security Bearer
 // @Param id path int true "Role ID"
@@ -151,7 +151,7 @@ func HandleSetRoleEnable(c echo.Context) error {
 
 // HandleSetRoleDisable godoc
 // @Summary Set role disable
-// @Tags IAM Roles
+// @Tags Roles
 // @ID set-role-disable
 // @Security Bearer
 // @Param id path int true "Role ID"
@@ -176,7 +176,7 @@ func HandleSetRoleDisable(c echo.Context) error {
 
 // HandleDeleteRole godoc
 // @Summary Delete role
-// @Tags IAM Roles
+// @Tags Roles
 // @ID delete-role
 // @Security Bearer
 // @Param id path int true "Role ID"
@@ -208,7 +208,7 @@ type setRoleApiRulesBody struct {
 
 // HandleSetRoleApiRules godoc
 // @Summary Set rules for role
-// @Tags IAM Roles
+// @Tags Roles
 // @ID set-role-rules
 // @Security Bearer
 // @Param id path int true "Role ID"

@@ -287,7 +287,7 @@ const docTemplate = `{
                     }
                 ],
                 "tags": [
-                    "IAM Roles"
+                    "Roles"
                 ],
                 "summary": "List roles",
                 "operationId": "list-roles",
@@ -349,7 +349,7 @@ const docTemplate = `{
                     }
                 ],
                 "tags": [
-                    "IAM Roles"
+                    "Roles"
                 ],
                 "summary": "Create a role",
                 "operationId": "create-role",
@@ -400,7 +400,7 @@ const docTemplate = `{
                     }
                 ],
                 "tags": [
-                    "IAM Roles"
+                    "Roles"
                 ],
                 "summary": "Get role",
                 "operationId": "get-role",
@@ -441,7 +441,7 @@ const docTemplate = `{
                     }
                 ],
                 "tags": [
-                    "IAM Roles"
+                    "Roles"
                 ],
                 "summary": "Update role",
                 "operationId": "update-role",
@@ -497,7 +497,7 @@ const docTemplate = `{
                     }
                 ],
                 "tags": [
-                    "IAM Roles"
+                    "Roles"
                 ],
                 "summary": "Delete role",
                 "operationId": "delete-role",
@@ -537,7 +537,7 @@ const docTemplate = `{
                     }
                 ],
                 "tags": [
-                    "IAM Roles"
+                    "Roles"
                 ],
                 "summary": "Set role disable",
                 "operationId": "set-role-disable",
@@ -586,7 +586,7 @@ const docTemplate = `{
                     }
                 ],
                 "tags": [
-                    "IAM Roles"
+                    "Roles"
                 ],
                 "summary": "Set role enable",
                 "operationId": "set-role-enable",
@@ -635,7 +635,7 @@ const docTemplate = `{
                     }
                 ],
                 "tags": [
-                    "IAM Roles"
+                    "Roles"
                 ],
                 "summary": "Set rules for role",
                 "operationId": "set-role-rules",
@@ -693,7 +693,7 @@ const docTemplate = `{
                     }
                 ],
                 "tags": [
-                    "IAM Rules"
+                    "Rules"
                 ],
                 "summary": "List rules",
                 "operationId": "list-rules",
@@ -724,7 +724,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "IAM Users"
+                    "Users"
                 ],
                 "summary": "List users",
                 "operationId": "list-users",
@@ -789,7 +789,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "IAM Users"
+                    "Users"
                 ],
                 "summary": "Create user",
                 "operationId": "create-user",
@@ -843,7 +843,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "IAM Users"
+                    "Users"
                 ],
                 "summary": "Get user",
                 "operationId": "get-user",
@@ -893,7 +893,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "IAM Users"
+                    "Users"
                 ],
                 "summary": "Update user",
                 "operationId": "update-user",
@@ -958,7 +958,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "IAM Users"
+                    "Users"
                 ],
                 "summary": "Delete user",
                 "operationId": "delete-user",
@@ -1013,7 +1013,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "IAM Users"
+                    "Users"
                 ],
                 "summary": "Change user password",
                 "operationId": "change-user-password",
@@ -1077,7 +1077,7 @@ const docTemplate = `{
                     }
                 ],
                 "tags": [
-                    "IAM Users"
+                    "Users"
                 ],
                 "summary": "Set user disable",
                 "operationId": "set-user-disable",
@@ -1126,7 +1126,7 @@ const docTemplate = `{
                     }
                 ],
                 "tags": [
-                    "IAM Users"
+                    "Users"
                 ],
                 "summary": "Set user enable",
                 "operationId": "set-user-enable",
@@ -1178,7 +1178,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "IAM Users"
+                    "Users"
                 ],
                 "summary": "Reset user password",
                 "operationId": "reset-user-password",
@@ -1227,7 +1227,7 @@ const docTemplate = `{
                     }
                 ],
                 "tags": [
-                    "IAM Users"
+                    "Users"
                 ],
                 "summary": "Get roles for user",
                 "operationId": "get-user-roles",
@@ -1271,7 +1271,7 @@ const docTemplate = `{
                     }
                 ],
                 "tags": [
-                    "IAM Users"
+                    "Users"
                 ],
                 "summary": "Set roles for user",
                 "operationId": "set-user-roles",
@@ -1327,7 +1327,7 @@ const docTemplate = `{
                     }
                 ],
                 "tags": [
-                    "IAM Users"
+                    "Users"
                 ],
                 "summary": "Add roles for user",
                 "operationId": "add-user-roles",
@@ -1699,16 +1699,24 @@ const docTemplate = `{
             "type": "object",
             "additionalProperties": {}
         }
+    },
+    "securityDefinitions": {
+        "Bearer": {
+            "description": "Type \"Bearer\" followed by a space and JWT token.",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
     }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "",
-	Host:             "",
-	BasePath:         "",
-	Schemes:          []string{},
-	Title:            "",
+	Version:          "1.0",
+	Host:             "dev.netdoop.com",
+	BasePath:         "/api/v1",
+	Schemes:          []string{"http"},
+	Title:            "IAM API",
 	Description:      "",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
