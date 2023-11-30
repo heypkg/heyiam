@@ -8,6 +8,10 @@ import (
 func SetupEchoGroup(group *echo.Group) *echo.Group {
 	db := GetDB()
 
+	meGroup := group.Group("/current")
+	meGroup.GET("", HandleWhoAmI)
+	meGroup.PUT("/change-password", HandleChangePassword)
+
 	group.GET("/rules", HandleListApiRules)
 
 	group.GET("/users", HandleListUsers)
