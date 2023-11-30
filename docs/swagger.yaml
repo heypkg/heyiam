@@ -1,0 +1,1084 @@
+definitions:
+  echo.HTTPError:
+    properties:
+      message: {}
+    type: object
+  echo.Map:
+    additionalProperties: true
+    type: object
+  gorm.DeletedAt:
+    properties:
+      time:
+        type: string
+      valid:
+        description: Valid is true if Time is not NULL
+        type: boolean
+    type: object
+  iam.AuditLog:
+    properties:
+      ApiName:
+        type: string
+      MetaData:
+        $ref: '#/definitions/jsontype.Tags'
+      Method:
+        type: string
+      Path:
+        type: string
+      Schema:
+        type: string
+      Status:
+        type: integer
+      Time:
+        type: string
+      Updated:
+        type: string
+      User:
+        $ref: '#/definitions/iam.User'
+      UserAlias:
+        type: string
+      UserId:
+        type: integer
+      UserName:
+        type: string
+    type: object
+  iam.Role:
+    properties:
+      Alias:
+        type: string
+      Created:
+        type: integer
+      Default:
+        type: boolean
+      Deleted:
+        $ref: '#/definitions/gorm.DeletedAt'
+      Enable:
+        type: boolean
+      Id:
+        type: integer
+      MetaData:
+        $ref: '#/definitions/jsontype.Tags'
+      Name:
+        type: string
+      Rules:
+        items:
+          type: string
+        type: array
+      Schema:
+        type: string
+      Updated:
+        type: integer
+    type: object
+  iam.User:
+    properties:
+      Alias:
+        type: string
+      Created:
+        type: integer
+      Default:
+        type: boolean
+      Deleted:
+        $ref: '#/definitions/gorm.DeletedAt'
+      Enable:
+        type: boolean
+      Id:
+        type: integer
+      MetaData:
+        $ref: '#/definitions/jsontype.Tags'
+      Name:
+        type: string
+      PasswordExpireAt:
+        type: integer
+      Roles:
+        items:
+          type: string
+        type: array
+      Rules:
+        items:
+          type: string
+        type: array
+      Schema:
+        type: string
+      Updated:
+        type: integer
+    type: object
+  iam.addUserRolesBody:
+    properties:
+      roleNames:
+        items:
+          type: string
+        type: array
+    type: object
+  iam.authBody:
+    properties:
+      password:
+        example: ""
+        type: string
+      username:
+        example: ""
+        type: string
+    type: object
+  iam.authResponseBody:
+    properties:
+      token:
+        type: string
+    type: object
+  iam.changePasswordBody:
+    properties:
+      NewPassword:
+        type: string
+      Password:
+        type: string
+    type: object
+  iam.createRoleBody:
+    properties:
+      alias:
+        type: string
+      name:
+        type: string
+    type: object
+  iam.createUserBody:
+    properties:
+      alias:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+    type: object
+  iam.listAuditLogsData:
+    properties:
+      Data:
+        items:
+          $ref: '#/definitions/iam.AuditLog'
+        type: array
+      Total:
+        type: integer
+    type: object
+  iam.listRolesData:
+    properties:
+      Data:
+        items:
+          $ref: '#/definitions/iam.Role'
+        type: array
+      Total:
+        type: integer
+    type: object
+  iam.listRulesBody:
+    properties:
+      Data:
+        items:
+          type: string
+        type: array
+      Total:
+        type: integer
+    type: object
+  iam.listUsersData:
+    properties:
+      Data:
+        items:
+          $ref: '#/definitions/iam.User'
+        type: array
+      Total:
+        type: integer
+    type: object
+  iam.setRoleApiRulesBody:
+    properties:
+      RoleIds:
+        items:
+          type: string
+        type: array
+    type: object
+  iam.setUserRoles:
+    properties:
+      roleNames:
+        items:
+          type: string
+        type: array
+    type: object
+  iam.updateRoleBody:
+    properties:
+      alias:
+        type: string
+    type: object
+  iam.updateUserBody:
+    properties:
+      alias:
+        type: string
+    type: object
+  jsontype.Tags:
+    additionalProperties: {}
+    type: object
+info:
+  contact: {}
+paths:
+  /auth:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Authenticate request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/iam.authBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Returns a login token
+          schema:
+            $ref: '#/definitions/iam.authResponseBody'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Authenticate a user
+      tags:
+      - Auth
+  /current:
+    get:
+      consumes:
+      - application/json
+      operationId: get-current
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User information
+          schema:
+            $ref: '#/definitions/iam.User'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - Bearer: []
+      summary: Get current user information
+      tags:
+      - Current
+  /current/change-password:
+    put:
+      consumes:
+      - application/json
+      operationId: change-current-password
+      parameters:
+      - description: Change password request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/iam.changePasswordBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Password changed successfully
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - Bearer: []
+      summary: Change current user password
+      tags:
+      - Current
+  /iam/audit-logs:
+    get:
+      operationId: list-audit-logs
+      parameters:
+      - default: 1
+        description: Page
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        name: page_size
+        type: integer
+      - default: ""
+        description: Sort order
+        in: query
+        name: order_by
+        type: string
+      - default: ""
+        description: Query
+        in: query
+        name: q
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            X-Total:
+              description: Total number
+              type: int
+          schema:
+            $ref: '#/definitions/iam.listAuditLogsData'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - Bearer: []
+      summary: List audit logs
+      tags:
+      - AuditLogs
+  /iam/audit-logs/{ts}:
+    get:
+      operationId: get-audit-log
+      parameters:
+      - description: Timestamp
+        in: path
+        name: ts
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/iam.AuditLog'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - Bearer: []
+      summary: Get audit log
+      tags:
+      - AuditLogs
+  /iam/roles:
+    get:
+      operationId: list-roles
+      parameters:
+      - default: 1
+        description: Page
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        name: page_size
+        type: integer
+      - default: ""
+        description: Sort order
+        in: query
+        name: order_by
+        type: string
+      - default: ""
+        description: Query
+        in: query
+        name: q
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/iam.listRolesData'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - Bearer: []
+      summary: List roles
+      tags:
+      - IAM Roles
+    post:
+      operationId: create-role
+      parameters:
+      - description: Create Role Body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/iam.createRoleBody'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/iam.Role'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - Bearer: []
+      summary: Create a role
+      tags:
+      - IAM Roles
+  /iam/roles/{id}:
+    delete:
+      operationId: delete-role
+      parameters:
+      - description: Role ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - Bearer: []
+      summary: Delete role
+      tags:
+      - IAM Roles
+    get:
+      operationId: get-role
+      parameters:
+      - description: Role ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/iam.Role'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - Bearer: []
+      summary: Get role
+      tags:
+      - IAM Roles
+    put:
+      operationId: update-role
+      parameters:
+      - description: Role ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Update Role Body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/iam.updateRoleBody'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/iam.Role'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - Bearer: []
+      summary: Update role
+      tags:
+      - IAM Roles
+  /iam/roles/{id}/disable:
+    put:
+      operationId: set-role-disable
+      parameters:
+      - description: Role ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/iam.Role'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - Bearer: []
+      summary: Set role disable
+      tags:
+      - IAM Roles
+  /iam/roles/{id}/enable:
+    put:
+      operationId: set-role-enable
+      parameters:
+      - description: Role ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/iam.Role'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - Bearer: []
+      summary: Set role enable
+      tags:
+      - IAM Roles
+  /iam/roles/{id}/rules:
+    put:
+      operationId: set-role-rules
+      parameters:
+      - description: Role ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: rules to set
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/iam.setRoleApiRulesBody'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/iam.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - Bearer: []
+      summary: Set rules for role
+      tags:
+      - IAM Roles
+  /iam/rules:
+    get:
+      operationId: list-rules
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/iam.listRulesBody'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - Bearer: []
+      summary: List rules
+      tags:
+      - IAM Rules
+  /iam/users:
+    get:
+      operationId: list-users
+      parameters:
+      - default: 1
+        description: Page
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        name: page_size
+        type: integer
+      - default: ""
+        description: Sort order
+        in: query
+        name: order_by
+        type: string
+      - default: ""
+        description: Query
+        in: query
+        name: q
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/iam.listUsersData'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - Bearer: []
+      summary: List users
+      tags:
+      - IAM Users
+    post:
+      operationId: create-user
+      parameters:
+      - description: User
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/iam.createUserBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/iam.User'
+        "400":
+          description: 'Bad Request: invalid input parameter'
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - Bearer: []
+      summary: Create user
+      tags:
+      - IAM Users
+  /iam/users/{id}:
+    delete:
+      operationId: delete-user
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - Bearer: []
+      summary: Delete user
+      tags:
+      - IAM Users
+    get:
+      operationId: get-user
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/iam.User'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - Bearer: []
+      summary: Get user
+      tags:
+      - IAM Users
+    put:
+      operationId: update-user
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: User
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/iam.updateUserBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/iam.User'
+        "400":
+          description: 'Bad Request: invalid input parameter'
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - Bearer: []
+      summary: Update user
+      tags:
+      - IAM Users
+  /iam/users/{id}/change-password:
+    put:
+      operationId: change-user-password
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Change password request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/iam.changePasswordBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/iam.User'
+        "400":
+          description: Invalid input parameter
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - Bearer: []
+      summary: Change user password
+      tags:
+      - IAM Users
+  /iam/users/{id}/disable:
+    put:
+      operationId: set-user-disable
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/iam.User'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - Bearer: []
+      summary: Set user disable
+      tags:
+      - IAM Users
+  /iam/users/{id}/enable:
+    put:
+      operationId: set-user-enable
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/iam.User'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - Bearer: []
+      summary: Set user enable
+      tags:
+      - IAM Users
+  /iam/users/{id}/reset-password:
+    put:
+      operationId: reset-user-password
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/echo.Map'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - Bearer: []
+      summary: Reset user password
+      tags:
+      - IAM Users
+  /iam/users/{id}/roles:
+    get:
+      operationId: get-user-roles
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - Bearer: []
+      summary: Get roles for user
+      tags:
+      - IAM Users
+    post:
+      operationId: add-user-roles
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Roles to add
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/iam.addUserRolesBody'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/iam.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - Bearer: []
+      summary: Add roles for user
+      tags:
+      - IAM Users
+    put:
+      operationId: set-user-roles
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Roles to set
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/iam.setUserRoles'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/iam.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - Bearer: []
+      summary: Set roles for user
+      tags:
+      - IAM Users
+swagger: "2.0"
