@@ -23,12 +23,11 @@ func Setup(db *gorm.DB, dataRetentionPeriod time.Duration,
 }
 
 func SetupAdmin(db *gorm.DB, schema string, password string) error {
-	e := GetEnforcer()
 	role, err := CreateDefaultRole(db, schema, "admin", "admin", []string{})
 	if err != nil {
 		return err
 	}
-	if _, err := AddApiRuleForRole(e, role.Schema, role.Name, ApiRule{Path: "*", Method: ".*"}); err != nil {
+	if _, err := AddApiRuleForRole(role.Schema, role.Name, ApiRule{Path: "*", Method: ".*"}); err != nil {
 		return err
 	}
 
@@ -36,7 +35,7 @@ func SetupAdmin(db *gorm.DB, schema string, password string) error {
 	if err != nil {
 		return err
 	}
-	if _, err := AddRoleForUser(e, user.Schema, user.Name, role.Name); err != nil {
+	if _, err := AddRoleForUser(user.Schema, user.Name, role.Name); err != nil {
 		return err
 	}
 	return nil
@@ -74,9 +73,8 @@ func createRole(db *gorm.DB, schema string, name string, alias string, isDefault
 	if err := db.Where("schema = ? AND name = ?", schema, name).FirstOrCreate(role).Error; err != nil {
 		return nil, errors.Wrap(err, "create role")
 	}
-	e := GetEnforcer()
 	rules := getApiRules(patterns...)
-	if _, err := SetApiRulesForRole(e, role.Schema, role.Name, rules); err != nil {
+	if _, err := SetApiRulesForRole(role.Schema, role.Name, rules); err != nil {
 		return nil, errors.Wrap(err, "set api rules for role")
 	}
 	return role, nil

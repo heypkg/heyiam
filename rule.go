@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/casbin/casbin/v2"
 	"github.com/spf13/cast"
 )
 
@@ -17,7 +16,8 @@ type GroupRule struct {
 	Method  string `json:"Method"`
 }
 
-func GetApiRulesForRole(e *casbin.Enforcer, domain string, role string) []ApiRule {
+func GetApiRulesForRole(domain string, role string) []ApiRule {
+	e := GetEnforcer()
 	if role == "admin" {
 		return getApiRules("*")
 	}
@@ -31,17 +31,18 @@ func GetApiRulesForRole(e *casbin.Enforcer, domain string, role string) []ApiRul
 	return rules
 }
 
-func GetApiRulesForUser(e *casbin.Enforcer, domain string, user string) []ApiRule {
+func GetApiRulesForUser(domain string, user string) []ApiRule {
 	rules := []ApiRule{}
-	roles, _ := GetRolesForUser(e, domain, user)
+	roles, _ := GetRolesForUser(domain, user)
 	for _, role := range roles {
-		_rules := GetApiRulesForRole(e, domain, role)
+		_rules := GetApiRulesForRole(domain, role)
 		rules = append(rules, _rules...)
 	}
 	return rules
 }
 
-func GetGroupRulesForRole(e *casbin.Enforcer, domain string, role string) []GroupRule {
+func GetGroupRulesForRole(domain string, role string) []GroupRule {
+	e := GetEnforcer()
 	rules := []GroupRule{}
 	polices := e.GetFilteredPolicy(0, fmt.Sprintf("r:%v", role), "", "", fmt.Sprintf("d:%v", domain))
 	for _, v := range polices {
@@ -52,7 +53,8 @@ func GetGroupRulesForRole(e *casbin.Enforcer, domain string, role string) []Grou
 	return rules
 }
 
-func DeleteAllApiRulesForRole(e *casbin.Enforcer, domain string, role string) (bool, error) {
+func DeleteAllApiRulesForRole(domain string, role string) (bool, error) {
+	e := GetEnforcer()
 	polices := [][]string{}
 	_polices := e.GetFilteredPolicy(0, fmt.Sprintf("r:%v", role), "", "", fmt.Sprintf("d:%v", domain))
 	for _, v := range _polices {
@@ -63,7 +65,8 @@ func DeleteAllApiRulesForRole(e *casbin.Enforcer, domain string, role string) (b
 	return e.RemovePolicies(polices)
 }
 
-func DeleteAllGroupRulesForRole(e *casbin.Enforcer, domain string, role string) (bool, error) {
+func DeleteAllGroupRulesForRole(domain string, role string) (bool, error) {
+	e := GetEnforcer()
 	polices := [][]string{}
 	_polices := e.GetFilteredPolicy(0, fmt.Sprintf("r:%v", role), "", "", fmt.Sprintf("d:%v", domain))
 	for _, v := range _polices {
@@ -74,8 +77,9 @@ func DeleteAllGroupRulesForRole(e *casbin.Enforcer, domain string, role string) 
 	return e.RemovePolicies(polices)
 }
 
-func SetApiRulesForRole(e *casbin.Enforcer, domain string, role string, rules []ApiRule) (bool, error) {
-	DeleteAllApiRulesForRole(e, domain, role)
+func SetApiRulesForRole(domain string, role string, rules []ApiRule) (bool, error) {
+	e := GetEnforcer()
+	DeleteAllApiRulesForRole(domain, role)
 	policies := [][]string{}
 	for _, rule := range rules {
 		policies = append(policies, []string{
@@ -88,8 +92,9 @@ func SetApiRulesForRole(e *casbin.Enforcer, domain string, role string, rules []
 	return e.AddPolicies(policies)
 }
 
-func SetGroupPoliciesForRole(e *casbin.Enforcer, domain string, role string, rules []GroupRule) (bool, error) {
-	DeleteAllGroupRulesForRole(e, domain, role)
+func SetGroupPoliciesForRole(domain string, role string, rules []GroupRule) (bool, error) {
+	e := GetEnforcer()
+	DeleteAllGroupRulesForRole(domain, role)
 	policies := [][]string{}
 	for _, rule := range rules {
 		policies = append(policies, []string{
@@ -102,7 +107,8 @@ func SetGroupPoliciesForRole(e *casbin.Enforcer, domain string, role string, rul
 	return e.AddPolicies(policies)
 }
 
-func AddApiRuleForRole(e *casbin.Enforcer, domain string, role string, rule ApiRule) (bool, error) {
+func AddApiRuleForRole(domain string, role string, rule ApiRule) (bool, error) {
+	e := GetEnforcer()
 	return e.AddPolicy(
 		fmt.Sprintf("r:%v", role),
 		fmt.Sprintf("p:%v", rule.Path),
@@ -111,7 +117,8 @@ func AddApiRuleForRole(e *casbin.Enforcer, domain string, role string, rule ApiR
 	)
 }
 
-func AddGroupPolicyForRole(e *casbin.Enforcer, domain string, role string, rule GroupRule) (bool, error) {
+func AddGroupPolicyForRole(domain string, role string, rule GroupRule) (bool, error) {
+	e := GetEnforcer()
 	return e.AddPolicy(
 		fmt.Sprintf("r:%v", role),
 		fmt.Sprintf("g:%v", rule.GroupId),

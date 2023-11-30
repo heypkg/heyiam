@@ -31,7 +31,7 @@ func (m *Role) BeforeSave(tx *gorm.DB) (err error) {
 
 func (m *Role) AfterFind(tx *gorm.DB) (err error) {
 	m.MetaData = m.MetaDataRaw.Data
-	rules := GetApiRulesForRole(GetEnforcer(), m.Schema, m.Name)
+	rules := GetApiRulesForRole(m.Schema, m.Name)
 	m.Rules = getApiRuleIdsByRule(rules)
 	return nil
 }

@@ -43,9 +43,8 @@ func (m *User) BeforeSave(tx *gorm.DB) (err error) {
 
 func (m *User) AfterFind(tx *gorm.DB) (err error) {
 	m.MetaData = m.MetaDataRaw.Data
-	e := GetEnforcer()
-	m.Roles, _ = GetRolesForUser(e, m.Schema, m.Name)
-	rules := GetApiRulesForUser(GetEnforcer(), m.Schema, m.Name)
+	m.Roles, _ = GetRolesForUser(m.Schema, m.Name)
+	rules := GetApiRulesForUser(m.Schema, m.Name)
 	m.Rules = getApiRuleIdsByRule(rules)
 	return nil
 }

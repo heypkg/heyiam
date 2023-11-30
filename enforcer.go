@@ -77,7 +77,8 @@ func NewEnforcer() (*casbin.Enforcer, error) {
 	return e, nil
 }
 
-func Enforce(e *casbin.Enforcer, dom string, sub string, obj string, act string) bool {
+func Enforce(dom string, sub string, obj string, act string) bool {
+	e := GetEnforcer()
 	ok, err := e.Enforce(sub, obj, act, dom)
 	if err != nil {
 		return false
@@ -85,8 +86,8 @@ func Enforce(e *casbin.Enforcer, dom string, sub string, obj string, act string)
 	return ok
 }
 
-func EnforceApi(e *casbin.Enforcer, domain string, user string, path string, method string) bool {
-	return Enforce(e,
+func EnforceApi(domain string, user string, path string, method string) bool {
+	return Enforce(
 		fmt.Sprintf("d:%v", domain),
 		fmt.Sprintf("u:%v", user),
 		fmt.Sprintf("p:%v", path),
@@ -94,7 +95,8 @@ func EnforceApi(e *casbin.Enforcer, domain string, user string, path string, met
 	)
 }
 
-func GetRolesForUser(e *casbin.Enforcer, domain string, user string) ([]string, error) {
+func GetRolesForUser(domain string, user string) ([]string, error) {
+	e := GetEnforcer()
 	roles := []string{}
 	_roles, err := e.GetRolesForUser(fmt.Sprintf("u:%v", user), fmt.Sprintf("d:%v", domain))
 	if err != nil {
@@ -108,14 +110,16 @@ func GetRolesForUser(e *casbin.Enforcer, domain string, user string) ([]string, 
 	return roles, nil
 }
 
-func DeleteAllRolesForUser(e *casbin.Enforcer, domain string, user string) (bool, error) {
+func DeleteAllRolesForUser(domain string, user string) (bool, error) {
+	e := GetEnforcer()
 	return e.DeleteRolesForUser(
 		fmt.Sprintf("u:%v", user),
 		fmt.Sprintf("d:%v", domain),
 	)
 }
 
-func AddRoleForUser(e *casbin.Enforcer, domain string, user string, role string) (bool, error) {
+func AddRoleForUser(domain string, user string, role string) (bool, error) {
+	e := GetEnforcer()
 	return e.AddRoleForUser(
 		fmt.Sprintf("u:%v", user),
 		fmt.Sprintf("r:%v", role),
@@ -123,7 +127,8 @@ func AddRoleForUser(e *casbin.Enforcer, domain string, user string, role string)
 	)
 }
 
-func AddRolesForUser(e *casbin.Enforcer, domain string, user string, roles []string) (bool, error) {
+func AddRolesForUser(domain string, user string, roles []string) (bool, error) {
+	e := GetEnforcer()
 	_roles := []string{}
 	for _, role := range roles {
 		_roles = append(_roles, fmt.Sprintf("r:%v", role))
@@ -135,7 +140,7 @@ func AddRolesForUser(e *casbin.Enforcer, domain string, user string, roles []str
 	)
 }
 
-func SetRolesForUser(e *casbin.Enforcer, domain string, user string, roles []string) (bool, error) {
-	DeleteAllRolesForUser(e, domain, user)
-	return AddRolesForUser(e, domain, user, roles)
+func SetRolesForUser(domain string, user string, roles []string) (bool, error) {
+	DeleteAllRolesForUser(domain, user)
+	return AddRolesForUser(domain, user, roles)
 }
