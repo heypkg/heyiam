@@ -73,7 +73,7 @@ func createRole(db *gorm.DB, schema string, name string, alias string, isDefault
 	if err := db.Where("schema = ? AND name = ?", schema, name).FirstOrCreate(role).Error; err != nil {
 		return nil, errors.Wrap(err, "create role")
 	}
-	rules := getApiRules(patterns...)
+	rules := GetApiRules(patterns...)
 	if _, err := SetApiRulesForRole(role.Schema, role.Name, rules); err != nil {
 		return nil, errors.Wrap(err, "set api rules for role")
 	}

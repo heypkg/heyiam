@@ -19,7 +19,7 @@ type GroupRule struct {
 func GetApiRulesForRole(domain string, role string) []ApiRule {
 	e := GetEnforcer()
 	if role == "admin" {
-		return getApiRules("*")
+		return GetApiRules("*")
 	}
 	rules := []ApiRule{}
 	polices := e.GetFilteredPolicy(0, fmt.Sprintf("r:%v", role), "", "", fmt.Sprintf("d:%v", domain))

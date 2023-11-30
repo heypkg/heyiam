@@ -64,7 +64,7 @@ func SetupApiRules(rules map[string]ApiRule) {
 // 	return ids
 // }
 
-func getApiRules(patterns ...string) []ApiRule {
+func GetApiRules(patterns ...string) []ApiRule {
 	rules := []ApiRule{}
 	ruleMap := make(map[string]bool)
 	for _, pattern := range patterns {
