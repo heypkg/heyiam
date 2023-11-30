@@ -5,14 +5,25 @@ import (
 
 	"github.com/heypkg/store/tsdb"
 	"github.com/pkg/errors"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
+
+var defaultDB *gorm.DB
+
+func GetDB() *gorm.DB {
+	return defaultDB
+}
+
+func GetLogger() *zap.Logger {
+	return zap.L().Named("iam")
+}
 
 func Setup(db *gorm.DB, dataRetentionPeriod time.Duration,
 	enforcerDriverName string, enforcerDataSourceName string) {
 
 	setupEnforcer(enforcerDriverName, enforcerDataSourceName)
-
+	defaultDB = db
 	db.AutoMigrate(&Role{}, &User{})
 	db.AutoMigrate(&AuditLog{})
 	tsdb.CreateHyperTable(db, "audit_logs", dataRetentionPeriod)
