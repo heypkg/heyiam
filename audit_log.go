@@ -59,7 +59,7 @@ func InsertAuditLog(db *gorm.DB, user *User, method string, registerPath string,
 	if method == "" || path == "" {
 		return nil
 	}
-	name := getApiRuleIdByRule(ApiRule{Method: method, Path: registerPath})
+	name := GetApiRuleIdByRule(ApiRule{Method: method, Path: registerPath})
 	if name == "" {
 		return errors.New("unknow api rule")
 	}

@@ -45,7 +45,7 @@ func (m *User) AfterFind(tx *gorm.DB) (err error) {
 	m.MetaData = m.MetaDataRaw.Data
 	m.Roles, _ = GetRolesForUser(m.Schema, m.Name)
 	rules := GetApiRulesForUser(m.Schema, m.Name)
-	m.Rules = getApiRuleIdsByRule(rules)
+	m.Rules = GetApiRuleIdsByRule(rules)
 	return nil
 }
 

@@ -83,7 +83,7 @@ func GetApiRules(patterns ...string) []ApiRule {
 	return rules
 }
 
-func getApiRuleIdsByRule(rules []ApiRule) []string {
+func GetApiRuleIdsByRule(rules []ApiRule) []string {
 	ids := []string{}
 	ruleMap := make(map[string]bool)
 	for _, rule := range rules {
@@ -99,7 +99,7 @@ func getApiRuleIdsByRule(rules []ApiRule) []string {
 	return ids
 }
 
-func getApiRuleIdByRule(rule ApiRule) string {
+func GetApiRuleIdByRule(rule ApiRule) string {
 	for id, rule2 := range apiRulesMap {
 		if rule.Method == rule2.Method && rule.Path == rule2.Path {
 			return id
