@@ -1,1 +1,1 @@
-swag init --parseDependency  --generalInfo ./echo.go
+swag init --parseDependency  --generalInfo ./iam.go
