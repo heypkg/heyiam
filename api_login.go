@@ -13,7 +13,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func MakeJwtHandler(secret string) echo.MiddlewareFunc {
+func (s *IAMServer) MakeJwtHandler(secret string) echo.MiddlewareFunc {
 	config := echojwt.Config{
 		NewClaimsFunc: func(c echo.Context) jwt.Claims {
 			return new(AccessClaims)
@@ -39,10 +39,10 @@ func MakeJwtHandler(secret string) echo.MiddlewareFunc {
 	return echojwt.WithConfig(config)
 }
 
-func MakeLoginHandler() echo.MiddlewareFunc {
+func (s *IAMServer) MakeLoginHandler() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		logger := GetLogger()
-		db := GetDB()
+		logger := s.logger
+		db := s.db
 		return func(c echo.Context) error {
 			path := c.Path()
 			token := GetTokenFromEchoContext(c)
@@ -64,7 +64,7 @@ func MakeLoginHandler() echo.MiddlewareFunc {
 				c.Set("loginName", user.Name)
 				c.Set("loginUser", user)
 				if path != "/api/v1/current" && !strings.HasPrefix(path, "/api/v1/current/") && !strings.HasPrefix(path, "/api/v1/system/") {
-					if ok := EnforceApi(user.Schema, user.Name, path, c.Request().Method); !ok {
+					if ok := s.EnforceApi(user.Schema, user.Name, path, c.Request().Method); !ok {
 						return echo.NewHTTPError(http.StatusUnauthorized, "unauthorized")
 					}
 				}
@@ -106,7 +106,7 @@ type authResponseBody struct {
 // @Failure 401 {object} echo.HTTPError "Unauthorized"
 // @Failure 500 {object} echo.HTTPError "Internal server error"
 // @Router /auth [POST]
-func HandleAuthenticate(c echo.Context) error {
+func (s *IAMServer) HandleAuthenticate(c echo.Context) error {
 	var data authBody
 	if err := c.Bind(&data); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, errors.Wrap(err, "invalid input parameter").Error())
@@ -114,7 +114,7 @@ func HandleAuthenticate(c echo.Context) error {
 
 	schema, name := ParseSchemaAndName(data.Username)
 
-	db := GetDB()
+	db := s.db
 	var user = User{}
 	if result := db.Where("schema = ? AND name = ?", schema, name).First(&user); result.Error != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, errors.Wrap(result.Error, "get user").Error())
@@ -145,13 +145,13 @@ func HandleAuthenticate(c echo.Context) error {
 // @Failure 401 {object} echo.HTTPError "Unauthorized"
 // @Failure 500 {object} echo.HTTPError "Internal server error"
 // @Router /current [GET]
-func HandleWhoAmI(c echo.Context) error {
+func (s *IAMServer) HandleWhoAmI(c echo.Context) error {
 	id := getLoginIdFromEchoContext(c)
 	if id == 0 {
 		return echo.NewHTTPError(http.StatusUnauthorized, "unauthorized")
 	}
 	var user User
-	db := GetDB()
+	db := s.db
 	if result := db.Where("id = ?", id).First(&user); result.Error != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, result.Error.Error())
 	}
@@ -175,7 +175,7 @@ type changePasswordBody struct {
 // @Failure 401 {object} echo.HTTPError "Unauthorized"
 // @Failure 500 {object} echo.HTTPError "Internal server error"
 // @Router /current/change-password [PUT]
-func HandleChangePassword(c echo.Context) error {
+func (s *IAMServer) HandleChangePassword(c echo.Context) error {
 	var data changePasswordBody
 	if err := c.Bind(&data); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, errors.Wrap(err, "invalid input parameter").Error())
@@ -187,7 +187,7 @@ func HandleChangePassword(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusUnauthorized, "unauthorized")
 	}
 	user := new(User)
-	db := GetDB()
+	db := s.db
 	if result := db.Where("schema = ? AND id = ?", schema, id).First(user); result.Error != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, result.Error.Error())
 	}

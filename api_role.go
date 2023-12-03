@@ -28,10 +28,16 @@ type listRolesData struct {
 // @Failure 401 {object} echo.HTTPError "Unauthorized"
 // @Failure 500 {object} echo.HTTPError "Internal server error"
 // @Router /iam/roles [get]
-func HandleListRoles(c echo.Context) error {
-	data, total, err := echohandler.ListObjects[Role](GetDB(), c, nil, nil)
+func (s *IAMServer) HandleListRoles(c echo.Context) error {
+	data, total, err := echohandler.ListObjects[Role](s.db, c, nil, nil)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	data2 := []Role{}
+	for _, obj := range data {
+		tmp := obj
+		tmp.GetRules(s)
+		data2 = append(data2, tmp)
 	}
 	c.Response().Header().Set("X-Total", fmt.Sprintf("%v", total))
 	return c.JSON(http.StatusOK, listRolesData{Data: data, Total: total})
@@ -53,7 +59,7 @@ type createRoleBody struct {
 // @Failure 401 {object} echo.HTTPError "Unauthorized"
 // @Failure 500 {object} echo.HTTPError "Internal server error"
 // @Router /iam/roles [post]
-func HandleCreateRole(c echo.Context) error {
+func (s *IAMServer) HandleCreateRole(c echo.Context) error {
 	var data createRoleBody
 	if err := c.Bind(&data); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, errors.Wrap(err, "invalid input parameter").Error())
@@ -63,11 +69,11 @@ func HandleCreateRole(c echo.Context) error {
 		Name:  data.Name,
 		Alias: data.Alias,
 	}
-	db := GetDB()
+	db := s.db
 	if err := db.Create(role).Error; err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
-
+	role.GetRules(s)
 	return c.JSON(http.StatusOK, role)
 }
 
@@ -81,8 +87,9 @@ func HandleCreateRole(c echo.Context) error {
 // @Failure 401 {object} echo.HTTPError "Unauthorized"
 // @Failure 500 {object} echo.HTTPError "Internal server error"
 // @Router /iam/roles/{id} [get]
-func HandleGetRole(c echo.Context) error {
+func (s *IAMServer) HandleGetRole(c echo.Context) error {
 	role := echohandler.GetObjectFromEchoContext[Role](c)
+	role.GetRules(s)
 	return c.JSON(http.StatusOK, role)
 }
 
@@ -102,7 +109,7 @@ type updateRoleBody struct {
 // @Failure 401 {object} echo.HTTPError "Unauthorized"
 // @Failure 500 {object} echo.HTTPError "Internal server error"
 // @Router /iam/roles/{id} [put]
-func HandleUpdateRole(c echo.Context) error {
+func (s *IAMServer) HandleUpdateRole(c echo.Context) error {
 	var data updateRoleBody
 	if err := c.Bind(&data); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, errors.Wrap(err, "invalid input parameter").Error())
@@ -116,11 +123,11 @@ func HandleUpdateRole(c echo.Context) error {
 	updateData := &Role{
 		Alias: data.Alias,
 	}
-	db := GetDB()
+	db := s.db
 	if err := db.Model(role).Select(updateColumns).Updates(updateData).Error; err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
-
+	role.GetRules(s)
 	return c.JSON(http.StatusOK, role)
 }
 
@@ -135,17 +142,18 @@ func HandleUpdateRole(c echo.Context) error {
 // @Failure 403 {object} echo.HTTPError "Forbidden"
 // @Failure 500 {object} echo.HTTPError "Internal server error"
 // @Router /iam/roles/{id}/enable [put]
-func HandleSetRoleEnable(c echo.Context) error {
+func (s *IAMServer) HandleSetRoleEnable(c echo.Context) error {
 	role := echohandler.GetObjectFromEchoContext[Role](c)
 	if role.Default {
 		return echo.NewHTTPError(http.StatusForbidden, "default role")
 	}
 	if !role.Enable {
-		db := GetDB()
+		db := s.db
 		if result := db.Model(role).Update("enable", true); result.Error != nil {
 			return echo.NewHTTPError(http.StatusInternalServerError, result.Error)
 		}
 	}
+	role.GetRules(s)
 	return c.JSON(http.StatusOK, role)
 }
 
@@ -160,17 +168,18 @@ func HandleSetRoleEnable(c echo.Context) error {
 // @Failure 403 {object} echo.HTTPError "Forbidden"
 // @Failure 500 {object} echo.HTTPError "Internal server error"
 // @Router /iam/roles/{id}/disable [put]
-func HandleSetRoleDisable(c echo.Context) error {
+func (s *IAMServer) HandleSetRoleDisable(c echo.Context) error {
 	role := echohandler.GetObjectFromEchoContext[Role](c)
 	if role.Default {
 		return echo.NewHTTPError(http.StatusForbidden, "default role")
 	}
 	if role.Enable {
-		db := GetDB()
+		db := s.db
 		if result := db.Model(role).Update("enable", false); result.Error != nil {
 			return echo.NewHTTPError(http.StatusInternalServerError, result.Error)
 		}
 	}
+	role.GetRules(s)
 	return c.JSON(http.StatusOK, role)
 }
 
@@ -184,20 +193,20 @@ func HandleSetRoleDisable(c echo.Context) error {
 // @Failure 401 {object} echo.HTTPError "Unauthorized"
 // @Failure 500 {object} echo.HTTPError "Internal server error"
 // @Router /iam/roles/{id} [delete]
-func HandleDeleteRole(c echo.Context) error {
+func (s *IAMServer) HandleDeleteRole(c echo.Context) error {
 	role := echohandler.GetObjectFromEchoContext[Role](c)
 	if role.Default {
 		return echo.NewHTTPError(http.StatusForbidden, "default role")
 	}
-	db := GetDB().Unscoped()
+	db := s.db.Unscoped()
 	if err := db.Delete(role).Error; err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
-	if _, err := DeleteAllApiRulesForRole(role.Schema, role.Name); err != nil {
-		GetLogger().Error("delete all api polices for role", zap.Error(err))
+	if _, err := s.DeleteAllApiRulesForRole(role.Schema, role.Name); err != nil {
+		s.logger.Error("delete all api polices for role", zap.Error(err))
 	}
-	if _, err := DeleteAllGroupRulesForRole(role.Schema, role.Name); err != nil {
-		GetLogger().Error("delete all group polices for role", zap.Error(err))
+	if _, err := s.DeleteAllGroupRulesForRole(role.Schema, role.Name); err != nil {
+		s.logger.Error("delete all group polices for role", zap.Error(err))
 	}
 	return c.NoContent(http.StatusNoContent)
 }
@@ -218,7 +227,7 @@ type setRoleApiRulesBody struct {
 // @Failure 401 {object} echo.HTTPError "Unauthorized"
 // @Failure 500 {object} echo.HTTPError "Internal Server Error"
 // @Router /iam/roles/{id}/rules [put]
-func HandleSetRoleApiRules(c echo.Context) error {
+func (s *IAMServer) HandleSetRoleApiRules(c echo.Context) error {
 	var data setRoleApiRulesBody
 	if err := c.Bind(&data); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, errors.Wrap(err, "invalid input parameter").Error())
@@ -228,11 +237,12 @@ func HandleSetRoleApiRules(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusForbidden, "default role")
 	}
 
-	rules := GetApiRules(data.RuleIds...)
-	if ok, err := SetApiRulesForRole(role.Schema, role.Name, rules); err != nil {
+	rules := s.GetApiRules(data.RuleIds...)
+	if ok, err := s.SetApiRulesForRole(role.Schema, role.Name, rules); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	} else if !ok {
 		return echo.NewHTTPError(http.StatusBadRequest, "already has the role")
 	}
+	role.GetRules(s)
 	return c.JSON(http.StatusOK, role)
 }

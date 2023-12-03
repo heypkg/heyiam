@@ -20,8 +20,8 @@ type listRulesBody struct {
 // @Success 200 {object} listRulesBody
 // @Failure 500 {object} echo.HTTPError "Internal server error"
 // @Router /iam/rules [get]
-func HandleListApiRules(c echo.Context) error {
-	rules := GetApiRuleIds("*")
+func (s *IAMServer) HandleListApiRules(c echo.Context) error {
+	rules := s.GetApiRuleIds("*")
 	sort.Slice(rules, func(i, j int) bool {
 		return rules[i] < rules[j]
 	})

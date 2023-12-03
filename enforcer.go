@@ -3,7 +3,6 @@ package iam
 import (
 	"fmt"
 	"strings"
-	"sync"
 
 	sqlxadapter "github.com/Blank-Xu/sqlx-adapter"
 	"github.com/casbin/casbin/v2"
@@ -31,29 +30,8 @@ e = some(where (p.eft == allow))
 m = g(r.sub, p.sub, r.dom) && r.dom == p.dom && keyMatch(r.obj, p.obj) && regexMatch(r.act, p.act)
 `
 
-var defaultDriverName string
-var defaultDataSourceName string
-var defaultEnforcer *casbin.Enforcer
-var defaultEnforcerOnce sync.Once
-
-func setupEnforcer(driverName string, dataSourceName string) {
-	defaultDriverName = driverName
-	defaultDataSourceName = dataSourceName
-}
-
-func GetEnforcer() *casbin.Enforcer {
-	defaultEnforcerOnce.Do(func() {
-		var err error
-		defaultEnforcer, err = NewEnforcer()
-		if err != nil {
-			zap.L().Fatal("create enforcer failed", zap.Error(err))
-		}
-	})
-	return defaultEnforcer
-}
-
-func NewEnforcer() (*casbin.Enforcer, error) {
-	db, err := sqlx.Open(defaultDriverName, defaultDataSourceName)
+func NewEnforcer(driverName string, dataSourceName string) (*casbin.Enforcer, error) {
+	db, err := sqlx.Open(driverName, dataSourceName)
 	if err != nil {
 		return nil, errors.Wrap(err, "open database")
 	}
@@ -77,17 +55,24 @@ func NewEnforcer() (*casbin.Enforcer, error) {
 	return e, nil
 }
 
-func Enforce(dom string, sub string, obj string, act string) bool {
-	e := GetEnforcer()
-	ok, err := e.Enforce(sub, obj, act, dom)
+func (s *IAMServer) setupEnforcer() {
+	e, err := NewEnforcer(s.enforcerDriverName, s.enforcerDataSourceName)
+	if err != nil {
+		s.logger.Fatal("create enforcer failed", zap.Error(err))
+	}
+	s.e = e
+}
+
+func (s *IAMServer) Enforce(dom string, sub string, obj string, act string) bool {
+	ok, err := s.e.Enforce(sub, obj, act, dom)
 	if err != nil {
 		return false
 	}
 	return ok
 }
 
-func EnforceApi(domain string, user string, path string, method string) bool {
-	return Enforce(
+func (s *IAMServer) EnforceApi(domain string, user string, path string, method string) bool {
+	return s.Enforce(
 		fmt.Sprintf("d:%v", domain),
 		fmt.Sprintf("u:%v", user),
 		fmt.Sprintf("p:%v", path),
@@ -95,10 +80,9 @@ func EnforceApi(domain string, user string, path string, method string) bool {
 	)
 }
 
-func GetRolesForUser(domain string, user string) ([]string, error) {
-	e := GetEnforcer()
+func (s *IAMServer) GetRolesForUser(domain string, user string) ([]string, error) {
 	roles := []string{}
-	_roles, err := e.GetRolesForUser(fmt.Sprintf("u:%v", user), fmt.Sprintf("d:%v", domain))
+	_roles, err := s.e.GetRolesForUser(fmt.Sprintf("u:%v", user), fmt.Sprintf("d:%v", domain))
 	if err != nil {
 		return roles, err
 	}
@@ -110,37 +94,34 @@ func GetRolesForUser(domain string, user string) ([]string, error) {
 	return roles, nil
 }
 
-func DeleteAllRolesForUser(domain string, user string) (bool, error) {
-	e := GetEnforcer()
-	return e.DeleteRolesForUser(
+func (s *IAMServer) DeleteAllRolesForUser(domain string, user string) (bool, error) {
+	return s.e.DeleteRolesForUser(
 		fmt.Sprintf("u:%v", user),
 		fmt.Sprintf("d:%v", domain),
 	)
 }
 
-func AddRoleForUser(domain string, user string, role string) (bool, error) {
-	e := GetEnforcer()
-	return e.AddRoleForUser(
+func (s *IAMServer) AddRoleForUser(domain string, user string, role string) (bool, error) {
+	return s.e.AddRoleForUser(
 		fmt.Sprintf("u:%v", user),
 		fmt.Sprintf("r:%v", role),
 		fmt.Sprintf("d:%v", domain),
 	)
 }
 
-func AddRolesForUser(domain string, user string, roles []string) (bool, error) {
-	e := GetEnforcer()
+func (s *IAMServer) AddRolesForUser(domain string, user string, roles []string) (bool, error) {
 	_roles := []string{}
 	for _, role := range roles {
 		_roles = append(_roles, fmt.Sprintf("r:%v", role))
 	}
-	return e.AddRolesForUser(
+	return s.e.AddRolesForUser(
 		fmt.Sprintf("u:%v", user),
 		_roles,
 		fmt.Sprintf("d:%v", domain),
 	)
 }
 
-func SetRolesForUser(domain string, user string, roles []string) (bool, error) {
-	DeleteAllRolesForUser(domain, user)
-	return AddRolesForUser(domain, user, roles)
+func (s *IAMServer) SetRolesForUser(domain string, user string, roles []string) (bool, error) {
+	s.DeleteAllRolesForUser(domain, user)
+	return s.AddRolesForUser(domain, user, roles)
 }

@@ -12,10 +12,8 @@ import (
 	"go.uber.org/zap"
 )
 
-func MakeAuditLogHandler() echo.MiddlewareFunc {
+func (s *IAMServer) MakeAuditLogHandler() echo.MiddlewareFunc {
 	return middleware.BodyDump(func(c echo.Context, reqBody, resBody []byte) {
-		logger := GetLogger()
-		db := GetDB()
 		req := c.Request()
 		resp := c.Response()
 		if req == nil || resp == nil {
@@ -33,8 +31,8 @@ func MakeAuditLogHandler() echo.MiddlewareFunc {
 						metadata["RequestContent"] = reqBody
 						metadata["ResponseContent"] = resBody
 					}
-					if err := InsertAuditLog(db, &user, method, registerPath, path, status, &metadata); err != nil {
-						logger.Error("insert audit log", zap.Error(err))
+					if err := s.InsertAuditLog(&user, method, registerPath, path, status, &metadata); err != nil {
+						s.logger.Error("insert audit log", zap.Error(err))
 					}
 				}
 			}
@@ -62,8 +60,8 @@ type listAuditLogsData struct {
 // @Failure 500 {object} echo.HTTPError "Internal Server error"
 // @Router /iam/audit-logs [get]
 // @Tags AuditLogs
-func HandleListAuditLogs(c echo.Context) error {
-	data, total, err := echohandler.ListObjects[AuditLog](GetDB(), c, nil, nil)
+func (s *IAMServer) HandleListAuditLogs(c echo.Context) error {
+	data, total, err := echohandler.ListObjects[AuditLog](s.db, c, nil, nil)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
@@ -83,7 +81,7 @@ func HandleListAuditLogs(c echo.Context) error {
 // @Failure 500 {object} echo.HTTPError "Internal Server error"
 // @Router /iam/audit-logs/{ts} [get]
 // @Tags AuditLogs
-func HandleGetAuditLog(c echo.Context) error {
+func (s *IAMServer) HandleGetAuditLog(c echo.Context) error {
 	obj := echohandler.GetObjectFromEchoContext[AuditLog](c)
 	return c.JSON(http.StatusOK, obj)
 }

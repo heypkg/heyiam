@@ -43,10 +43,13 @@ func (m *User) BeforeSave(tx *gorm.DB) (err error) {
 
 func (m *User) AfterFind(tx *gorm.DB) (err error) {
 	m.MetaData = m.MetaDataRaw.Data
-	m.Roles, _ = GetRolesForUser(m.Schema, m.Name)
-	rules := GetApiRulesForUser(m.Schema, m.Name)
-	m.Rules = GetApiRuleIdsByRule(rules)
 	return nil
+}
+
+func (m *User) GetRolesAndRules(s *IAMServer) {
+	m.Roles, _ = s.GetRolesForUser(m.Schema, m.Name)
+	rules := s.GetApiRulesForUser(m.Schema, m.Name)
+	m.Rules = s.GetApiRuleIdsByRule(rules)
 }
 
 func (s *User) SetPassword(password string) {

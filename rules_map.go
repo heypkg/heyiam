@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-var apiRulesMap = map[string]ApiRule{
+var defaultApiRulesMap = map[string]ApiRule{
 	// "api.system.time.get": {Method: "GET", Path: "/api/v1/system/time"},
 
 	"api.auth": {Method: "POST", Path: "/api/v1/auth"},
@@ -39,20 +39,20 @@ var apiRulesMap = map[string]ApiRule{
 	"api.iam.audit-logs.get":  {Method: "GET", Path: "/api/v1/iam/audit-logs/:ts"},
 }
 
-func setupApiRules(rules map[string]ApiRule) {
+func (s *IAMServer) setupApiRules(rules map[string]ApiRule) {
 	for key, rule := range rules {
-		apiRulesMap[key] = rule
+		s.apiRulesMap[key] = rule
 	}
 }
 
-func GetApiRuleIds(patterns ...string) []string {
+func (s *IAMServer) GetApiRuleIds(patterns ...string) []string {
 	ids := []string{}
 	ruleMap := make(map[string]bool)
 	for _, pattern := range patterns {
 		pattern = strings.ReplaceAll(pattern, ".", "\\.")
 		pattern = strings.ReplaceAll(pattern, "*", ".*")
 		re := regexp.MustCompile(pattern)
-		for id, _ := range apiRulesMap {
+		for id, _ := range s.apiRulesMap {
 			if re.Match([]byte(id)) {
 				if _, ok := ruleMap[id]; !ok {
 					ruleMap[id] = true
@@ -64,14 +64,14 @@ func GetApiRuleIds(patterns ...string) []string {
 	return ids
 }
 
-func GetApiRules(patterns ...string) []ApiRule {
+func (s *IAMServer) GetApiRules(patterns ...string) []ApiRule {
 	rules := []ApiRule{}
 	ruleMap := make(map[string]bool)
 	for _, pattern := range patterns {
 		pattern = strings.ReplaceAll(pattern, ".", "\\.")
 		pattern = strings.ReplaceAll(pattern, "*", ".*")
 		re := regexp.MustCompile(pattern)
-		for id, rule := range apiRulesMap {
+		for id, rule := range s.apiRulesMap {
 			if re.Match([]byte(id)) {
 				if _, ok := ruleMap[id]; !ok {
 					ruleMap[id] = true
@@ -83,11 +83,11 @@ func GetApiRules(patterns ...string) []ApiRule {
 	return rules
 }
 
-func GetApiRuleIdsByRule(rules []ApiRule) []string {
+func (s *IAMServer) GetApiRuleIdsByRule(rules []ApiRule) []string {
 	ids := []string{}
 	ruleMap := make(map[string]bool)
 	for _, rule := range rules {
-		for id, rule2 := range apiRulesMap {
+		for id, rule2 := range s.apiRulesMap {
 			if rule.Method == rule2.Method && rule.Path == rule2.Path {
 				if _, ok := ruleMap[id]; !ok {
 					ruleMap[id] = true
@@ -99,8 +99,8 @@ func GetApiRuleIdsByRule(rules []ApiRule) []string {
 	return ids
 }
 
-func GetApiRuleIdByRule(rule ApiRule) string {
-	for id, rule2 := range apiRulesMap {
+func (s *IAMServer) GetApiRuleIdByRule(rule ApiRule) string {
+	for id, rule2 := range s.apiRulesMap {
 		if rule.Method == rule2.Method && rule.Path == rule2.Path {
 			return id
 		}

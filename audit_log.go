@@ -1,8 +1,6 @@
 package iam
 
 import (
-	"sync"
-
 	"github.com/heypkg/store/jsontype"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
@@ -46,26 +44,23 @@ func (m *AuditLog) AfterFind(tx *gorm.DB) (err error) {
 	return nil
 }
 
-var ignoreApiRuleIdsLock sync.RWMutex
-var ignoreApiRuleIds = []string{}
-
-func SetAuditLogIgnoreIds(ids []string) {
-	ignoreApiRuleIdsLock.Lock()
-	defer ignoreApiRuleIdsLock.Unlock()
-	ignoreApiRuleIds = ids
+func (s *IAMServer) SetAuditLogIgnoreIds(ids []string) {
+	s.ignoreApiRuleIdsLock.Lock()
+	defer s.ignoreApiRuleIdsLock.Unlock()
+	s.ignoreApiRuleIds = ids
 }
 
-func InsertAuditLog(db *gorm.DB, user *User, method string, registerPath string, path string, status int, metaData *jsontype.Tags) error {
+func (s *IAMServer) InsertAuditLog(user *User, method string, registerPath string, path string, status int, metaData *jsontype.Tags) error {
 	if method == "" || path == "" {
 		return nil
 	}
-	name := GetApiRuleIdByRule(ApiRule{Method: method, Path: registerPath})
+	name := s.GetApiRuleIdByRule(ApiRule{Method: method, Path: registerPath})
 	if name == "" {
 		return errors.New("unknow api rule")
 	}
-	ignoreApiRuleIdsLock.RLock()
-	defer ignoreApiRuleIdsLock.RUnlock()
-	for _, v := range ignoreApiRuleIds {
+	s.ignoreApiRuleIdsLock.RLock()
+	defer s.ignoreApiRuleIdsLock.RUnlock()
+	for _, v := range s.ignoreApiRuleIds {
 		if v == name {
 			return nil
 		}
@@ -81,7 +76,7 @@ func InsertAuditLog(db *gorm.DB, user *User, method string, registerPath string,
 		Path:      path,
 		MetaData:  metaData,
 	}
-	result := db.Create(obj)
+	result := s.db.Create(obj)
 	if result.Error != nil {
 		return errors.Wrap(result.Error, "create new audit log")
 	}

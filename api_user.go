@@ -31,8 +31,8 @@ type listUsersData struct {
 // @Failure 401 {object} echo.HTTPError "Unauthorized"
 // @Failure 500 {object} echo.HTTPError "Internal server error"
 // @Router /iam/users [get]
-func HandleListUsers(c echo.Context) error {
-	data, total, err := echohandler.ListObjects[User](GetDB(), c, nil, nil)
+func (s *IAMServer) HandleListUsers(c echo.Context) error {
+	data, total, err := echohandler.ListObjects[User](s.db, c, nil, nil)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
@@ -40,6 +40,7 @@ func HandleListUsers(c echo.Context) error {
 	users2 := []User{}
 	for _, user := range data {
 		tmp := user
+		tmp.GetRolesAndRules(s)
 		users2 = append(users2, tmp)
 	}
 	c.Response().Header().Set("X-Total", fmt.Sprintf("%v", total))
@@ -64,13 +65,12 @@ type createUserBody struct {
 // @Failure 401 {object} echo.HTTPError "Unauthorized"
 // @Failure 500 {object} echo.HTTPError "Internal server error"
 // @Router /iam/users [post]
-func HandleCreateUser(c echo.Context) error {
+func (s *IAMServer) HandleCreateUser(c echo.Context) error {
 	var data createUserBody
 	if err := c.Bind(&data); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, errors.Wrap(err, "invalid input parameter").Error())
 	}
 
-	db := GetDB()
 	user := User{
 		Schema: cast.ToString(c.Get("schema")),
 		Name:   data.Name,
@@ -78,10 +78,11 @@ func HandleCreateUser(c echo.Context) error {
 	}
 	user.SetPassword(data.Password)
 
-	result := db.Create(&user)
+	result := s.db.Create(&user)
 	if result.Error != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, result.Error)
 	}
+	user.GetRolesAndRules(s)
 	return c.JSON(http.StatusOK, user)
 }
 
@@ -97,8 +98,9 @@ func HandleCreateUser(c echo.Context) error {
 // @Failure 404 {object} echo.HTTPError "User not found"
 // @Failure 500 {object} echo.HTTPError "Internal server error"
 // @Router /iam/users/{id} [get]
-func HandleGetUser(c echo.Context) error {
+func (s *IAMServer) HandleGetUser(c echo.Context) error {
 	user := echohandler.GetObjectFromEchoContext[User](c)
+	user.GetRolesAndRules(s)
 	return c.JSON(http.StatusOK, user)
 }
 
@@ -120,7 +122,7 @@ type updateUserBody struct {
 // @Failure 404 {object} echo.HTTPError "User not found"
 // @Failure 500 {object} echo.HTTPError "Internal server error"
 // @Router /iam/users/{id} [put]
-func HandleUpdateUser(c echo.Context) error {
+func (s *IAMServer) HandleUpdateUser(c echo.Context) error {
 	var data updateUserBody
 	if err := c.Bind(&data); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, errors.Wrap(err, "invalid input parameter").Error())
@@ -134,10 +136,10 @@ func HandleUpdateUser(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusForbidden, "default user")
 	}
 
-	db := GetDB()
-	if result := db.Model(user).Select(updateColumns).Updates(updateData); result.Error != nil {
+	if result := s.db.Model(user).Select(updateColumns).Updates(updateData); result.Error != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, result.Error)
 	}
+	user.GetRolesAndRules(s)
 	return c.JSON(http.StatusOK, user)
 }
 
@@ -151,8 +153,9 @@ func HandleUpdateUser(c echo.Context) error {
 // @Failure 401 {object} echo.HTTPError "Unauthorized"
 // @Failure 500 {object} echo.HTTPError "Internal Server Error"
 // @Router /iam/users/{id}/roles [get]
-func HandleGetUserRoles(c echo.Context) error {
+func (s *IAMServer) HandleGetUserRoles(c echo.Context) error {
 	user := echohandler.GetObjectFromEchoContext[User](c)
+	user.GetRolesAndRules(s)
 	return c.JSON(http.StatusOK, user.Roles)
 }
 
@@ -172,7 +175,7 @@ type addUserRolesBody struct {
 // @Failure 401 {object} echo.HTTPError "Unauthorized"
 // @Failure 500 {object} echo.HTTPError "Internal Server Error"
 // @Router /iam/users/{id}/roles [post]
-func HandleAddUserRoles(c echo.Context) error {
+func (s *IAMServer) HandleAddUserRoles(c echo.Context) error {
 	var data addUserRolesBody
 	if err := c.Bind(&data); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, errors.Wrap(err, "invalid input parameter").Error())
@@ -182,10 +185,9 @@ func HandleAddUserRoles(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusForbidden, "default user")
 	}
 
-	db := GetDB()
 	for _, roleName := range data.RoleNames {
 		role := new(Role)
-		if err := db.Where("schema = ? AND name = ?", user.Schema, roleName).First(role).Error; err != nil {
+		if err := s.db.Where("schema = ? AND name = ?", user.Schema, roleName).First(role).Error; err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				return echo.NewHTTPError(http.StatusBadRequest, "invalid role")
 			} else {
@@ -193,11 +195,12 @@ func HandleAddUserRoles(c echo.Context) error {
 			}
 		}
 	}
-	if ok, err := AddRolesForUser(user.Schema, user.Name, data.RoleNames); err != nil {
+	if ok, err := s.AddRolesForUser(user.Schema, user.Name, data.RoleNames); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	} else if !ok {
 		return echo.NewHTTPError(http.StatusBadRequest, "already has the role")
 	}
+	user.GetRolesAndRules(s)
 	return c.JSON(http.StatusOK, user)
 }
 
@@ -217,7 +220,7 @@ type setUserRoles struct {
 // @Failure 401 {object} echo.HTTPError "Unauthorized"
 // @Failure 500 {object} echo.HTTPError "Internal Server Error"
 // @Router /iam/users/{id}/roles [put]
-func HandleSetUserRoles(c echo.Context) error {
+func (s *IAMServer) HandleSetUserRoles(c echo.Context) error {
 	var data setUserRoles
 	if err := c.Bind(&data); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, errors.Wrap(err, "invalid input parameter").Error())
@@ -227,10 +230,9 @@ func HandleSetUserRoles(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusForbidden, "default user")
 	}
 
-	db := GetDB()
 	for _, roleName := range data.RoleNames {
 		role := new(Role)
-		if err := db.Where("schema = ? AND name = ?", user.Schema, roleName).First(role).Error; err != nil {
+		if err := s.db.Where("schema = ? AND name = ?", user.Schema, roleName).First(role).Error; err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				return echo.NewHTTPError(http.StatusBadRequest, "invalid role")
 			} else {
@@ -238,11 +240,12 @@ func HandleSetUserRoles(c echo.Context) error {
 			}
 		}
 	}
-	if ok, err := SetRolesForUser(user.Schema, user.Name, data.RoleNames); err != nil {
+	if ok, err := s.SetRolesForUser(user.Schema, user.Name, data.RoleNames); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	} else if !ok {
 		return echo.NewHTTPError(http.StatusBadRequest, "already has the role")
 	}
+	user.GetRolesAndRules(s)
 	return c.JSON(http.StatusOK, user)
 }
 
@@ -257,17 +260,17 @@ func HandleSetUserRoles(c echo.Context) error {
 // @Failure 403 {object} echo.HTTPError "Forbidden"
 // @Failure 500 {object} echo.HTTPError "Internal server error"
 // @Router /iam/users/{id}/enable [put]
-func HandleSetUserEnable(c echo.Context) error {
+func (s *IAMServer) HandleSetUserEnable(c echo.Context) error {
 	user := echohandler.GetObjectFromEchoContext[User](c)
 	if user.Default {
 		return echo.NewHTTPError(http.StatusForbidden, "default user")
 	}
 	if !user.Enable {
-		db := GetDB()
-		if result := db.Model(user).Update("enable", true); result.Error != nil {
+		if result := s.db.Model(user).Update("enable", true); result.Error != nil {
 			return echo.NewHTTPError(http.StatusInternalServerError, result.Error)
 		}
 	}
+	user.GetRolesAndRules(s)
 	return c.JSON(http.StatusOK, user)
 }
 
@@ -282,17 +285,17 @@ func HandleSetUserEnable(c echo.Context) error {
 // @Failure 403 {object} echo.HTTPError "Forbidden"
 // @Failure 500 {object} echo.HTTPError "Internal server error"
 // @Router /iam/users/{id}/disable [put]
-func HandleSetUserDisable(c echo.Context) error {
+func (s *IAMServer) HandleSetUserDisable(c echo.Context) error {
 	user := echohandler.GetObjectFromEchoContext[User](c)
 	if user.Default {
 		return echo.NewHTTPError(http.StatusForbidden, "default user")
 	}
 	if user.Enable {
-		db := GetDB()
-		if result := db.Model(user).Update("enable", false); result.Error != nil {
+		if result := s.db.Model(user).Update("enable", false); result.Error != nil {
 			return echo.NewHTTPError(http.StatusInternalServerError, result.Error)
 		}
 	}
+	user.GetRolesAndRules(s)
 	return c.JSON(http.StatusOK, user)
 }
 
@@ -308,14 +311,13 @@ func HandleSetUserDisable(c echo.Context) error {
 // @Failure 404 {object} echo.HTTPError "User not found"
 // @Failure 500 {object} echo.HTTPError "Internal server error"
 // @Router /iam/users/{id}/reset-password [put]
-func HandleResetUserPassword(c echo.Context) error {
+func (s *IAMServer) HandleResetUserPassword(c echo.Context) error {
 	password := GeneratePassword()
 	updateColumns := []string{"passwod"}
 	updateData := &User{}
 	updateData.SetPassword(password)
 	user := echohandler.GetObjectFromEchoContext[User](c)
-	db := GetDB()
-	if result := db.Model(user).Select(updateColumns).Updates(updateData); result.Error != nil {
+	if result := s.db.Model(user).Select(updateColumns).Updates(updateData); result.Error != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, result.Error)
 	}
 	return c.JSON(http.StatusOK, echo.Map{
@@ -337,7 +339,7 @@ func HandleResetUserPassword(c echo.Context) error {
 // @Failure 404 {object} echo.HTTPError "User not found"
 // @Failure 500 {object} echo.HTTPError "Internal server error"
 // @Router /iam/users/{id}/change-password [put]
-func HandleChangeUserPassword(c echo.Context) error {
+func (s *IAMServer) HandleChangeUserPassword(c echo.Context) error {
 	var data changePasswordBody
 	if err := c.Bind(&data); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, errors.Wrap(err, "invalid input parameter").Error())
@@ -349,10 +351,10 @@ func HandleChangeUserPassword(c echo.Context) error {
 	updateColumns := []string{"password"}
 	updateData := &User{}
 	updateData.SetPassword(data.NewPassword)
-	db := GetDB()
-	if result := db.Model(user).Select(updateColumns).Updates(updateData); result.Error != nil {
+	if result := s.db.Model(user).Select(updateColumns).Updates(updateData); result.Error != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, result.Error)
 	}
+	user.GetRolesAndRules(s)
 	return c.JSON(http.StatusOK, user)
 }
 
@@ -369,17 +371,17 @@ func HandleChangeUserPassword(c echo.Context) error {
 // @Failure 404 {object} echo.HTTPError "User not found"
 // @Failure 500 {object} echo.HTTPError "Internal server error"
 // @Router /iam/users/{id} [delete]
-func HandleDeleteUser(c echo.Context) error {
+func (s *IAMServer) HandleDeleteUser(c echo.Context) error {
 	user := echohandler.GetObjectFromEchoContext[User](c)
 	if user.Default {
 		return echo.NewHTTPError(http.StatusForbidden, "default user")
 	}
-	db := GetDB().Unscoped()
+	db := s.db.Unscoped()
 	if result := db.Delete(user); result.Error != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, result.Error)
 	}
-	if _, err := DeleteAllRolesForUser(user.Schema, user.Name); err != nil {
-		GetLogger().Error("delete all roles for user", zap.Error(err))
+	if _, err := s.DeleteAllRolesForUser(user.Schema, user.Name); err != nil {
+		s.logger.Error("delete all roles for user", zap.Error(err))
 	}
 	return c.NoContent(http.StatusNoContent)
 }
