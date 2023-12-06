@@ -8,10 +8,10 @@ import (
 var defaultApiRulesMap = map[string]ApiRule{
 	// "api.system.time.get": {Method: "GET", Path: "/api/v1/system/time"},
 
-	"api.auth": {Method: "POST", Path: "/api/v1/auth"},
+	"api.iam.auth": {Method: "POST", Path: "/api/v1/iam/auth"},
 
-	// "api.current.get":             {Method: "GET", Path: "/api/v1/current"},
-	// "api.current.change-password": {Method: "PUT", Path: "/api/v1/current/change-password"},
+	// "api.iam.current.get":             {Method: "GET", Path: "/api/v1/iam/current"},
+	// "api.iam.current.change-password": {Method: "PUT", Path: "/api/v1/iam/current/change-password"},
 
 	"api.iam.roles.list":      {Method: "GET", Path: "/api/v1/iam/roles"},
 	"api.iam.roles.get":       {Method: "GET", Path: "/api/v1/iam/roles/:id"},
