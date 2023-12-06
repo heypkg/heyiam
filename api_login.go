@@ -105,7 +105,7 @@ type authResponseBody struct {
 // @Failure 400 {object} echo.HTTPError "Bad request"
 // @Failure 401 {object} echo.HTTPError "Unauthorized"
 // @Failure 500 {object} echo.HTTPError "Internal server error"
-// @Router /auth [POST]
+// @Router /iam/auth [POST]
 func (s *IAMServer) HandleAuthenticate(c echo.Context) error {
 	var data authBody
 	if err := c.Bind(&data); err != nil {
@@ -144,7 +144,7 @@ func (s *IAMServer) HandleAuthenticate(c echo.Context) error {
 // @Success 200 {object} User "User information"
 // @Failure 401 {object} echo.HTTPError "Unauthorized"
 // @Failure 500 {object} echo.HTTPError "Internal server error"
-// @Router /current [GET]
+// @Router /iam/current [GET]
 func (s *IAMServer) HandleWhoAmI(c echo.Context) error {
 	id := getLoginIdFromEchoContext(c)
 	if id == 0 {
@@ -174,7 +174,7 @@ type changePasswordBody struct {
 // @Failure 400 {object} echo.HTTPError "Bad request"
 // @Failure 401 {object} echo.HTTPError "Unauthorized"
 // @Failure 500 {object} echo.HTTPError "Internal server error"
-// @Router /current/change-password [PUT]
+// @Router /iam/current/change-password [PUT]
 func (s *IAMServer) HandleChangePassword(c echo.Context) error {
 	var data changePasswordBody
 	if err := c.Bind(&data); err != nil {
