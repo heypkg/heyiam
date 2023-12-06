@@ -63,7 +63,7 @@ func (s *IAMServer) MakeLoginHandler() echo.MiddlewareFunc {
 				c.Set("loginId", user.ID)
 				c.Set("loginName", user.Name)
 				c.Set("loginUser", user)
-				if path != "/api/v1/current" && !strings.HasPrefix(path, "/api/v1/current/") && !strings.HasPrefix(path, "/api/v1/system/") {
+				if path != "/api/v1/iam/current" && !strings.HasPrefix(path, "/api/v1/iam/current/") && !strings.HasPrefix(path, "/api/v1/system/") {
 					if ok := s.EnforceApi(user.Schema, user.Name, path, c.Request().Method); !ok {
 						return echo.NewHTTPError(http.StatusUnauthorized, "unauthorized")
 					}
