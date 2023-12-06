@@ -1,7 +1,6 @@
 package iam
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -21,21 +20,21 @@ func (s *IAMServer) MakeJwtHandler() echo.MiddlewareFunc {
 		},
 		SigningKey:  []byte(defaultSecret),
 		TokenLookup: "header:Authorization:Bearer ,query:token",
-		BeforeFunc: func(c echo.Context) {
-			req := c.Request()
-			auth := fmt.Sprintf("%v", req.Header["Authorization"][0])
-			auth = strings.ReplaceAll(auth, "Bearer ", "")
-			claims := &AccessClaims{}
-			fmt.Printf("!!!!!     %v\n", auth)
-			token, err := jwt.ParseWithClaims(auth, claims, func(token *jwt.Token) (interface{}, error) {
-				return []byte(defaultSecret), nil
-			})
-			if err != nil {
-				fmt.Printf("!!!!!     %v\n", err.Error())
-			}
-			fmt.Printf("!!!!!     %v\n", claims)
-			fmt.Printf("!!!!!     %v\n", token)
-		},
+		// BeforeFunc: func(c echo.Context) {
+		// 	req := c.Request()
+		// 	auth := fmt.Sprintf("%v", req.Header["Authorization"][0])
+		// 	auth = strings.ReplaceAll(auth, "Bearer ", "")
+		// 	claims := &AccessClaims{}
+		// 	fmt.Printf("!!!!!     %v\n", auth)
+		// 	token, err := jwt.ParseWithClaims(auth, claims, func(token *jwt.Token) (interface{}, error) {
+		// 		return []byte(defaultSecret), nil
+		// 	})
+		// 	if err != nil {
+		// 		fmt.Printf("!!!!!     %v\n", err.Error())
+		// 	}
+		// 	fmt.Printf("!!!!!     %v\n", claims)
+		// 	fmt.Printf("!!!!!     %v\n", token)
+		// },
 	}
 	return echojwt.WithConfig(config)
 }
