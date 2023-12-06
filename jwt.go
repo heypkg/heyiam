@@ -1,6 +1,8 @@
 package iam
 
 import (
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -51,10 +53,21 @@ func CreateLoginToken(secret string, username string, expires time.Duration) (st
 }
 
 func GetTokenFromEchoContext(c echo.Context) *jwt.Token {
-	if v := c.Get("user"); v != nil {
-		if token, ok := v.(*jwt.Token); ok {
-			return token
-		}
+	req := c.Request()
+	auth := fmt.Sprintf("%v", req.Header["Authorization"][0])
+	auth = strings.ReplaceAll(auth, "Bearer ", "")
+	claims := &AccessClaims{}
+	fmt.Printf("!!!!!     %v\n", auth)
+	token, err := jwt.ParseWithClaims(auth, claims, func(token *jwt.Token) (interface{}, error) {
+		return []byte(defaultSecret), nil
+	})
+	if err != nil {
+		return nil
 	}
-	return nil
+	// if v := c.Get("user"); v != nil {
+	// 	if token, ok := v.(*jwt.Token); ok {
+	// 		return token
+	// 	}
+	// }
+	return token
 }
