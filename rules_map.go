@@ -8,7 +8,7 @@ import (
 var defaultApiRulesMap = map[string]ApiRule{
 	// "api.system.time.get": {Method: "GET", Path: "/api/v1/system/time"},
 
-	"api.iam.auth": {Method: "POST", Path: "/api/v1/iam/auth"},
+	"api.auth": {Method: "POST", Path: "/api/v1/auth"},
 
 	// "api.iam.current.get":             {Method: "GET", Path: "/api/v1/iam/current"},
 	// "api.iam.current.change-password": {Method: "PUT", Path: "/api/v1/iam/current/change-password"},

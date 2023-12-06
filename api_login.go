@@ -105,7 +105,7 @@ type authResponseBody struct {
 // @Failure 400 {object} echo.HTTPError "Bad request"
 // @Failure 401 {object} echo.HTTPError "Unauthorized"
 // @Failure 500 {object} echo.HTTPError "Internal server error"
-// @Router /iam/auth [POST]
+// @Router /auth [POST]
 func (s *IAMServer) HandleAuthenticate(c echo.Context) error {
 	var data authBody
 	if err := c.Bind(&data); err != nil {
