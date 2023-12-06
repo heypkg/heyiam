@@ -10,11 +10,13 @@ import (
 
 var defaultServer *IAMServer
 var defaultServerMutex sync.Mutex
+var defaultSecret string = "heypkg2023!!"
 
 func Setup(db *gorm.DB, dataRetentionPeriod time.Duration,
-	enforcerDriverName string, enforcerDataSourceName string, rules map[string]ApiRule) {
+	enforcerDriverName string, enforcerDataSourceName string, secret string, rules map[string]ApiRule) {
 	defaultServerMutex.Lock()
 	defer defaultServerMutex.Unlock()
+	defaultSecret = secret
 	defaultServer = NewIAMServer(db, dataRetentionPeriod, enforcerDriverName, enforcerDataSourceName, rules)
 }
 
@@ -31,8 +33,8 @@ func SetupEchoGroup(group *echo.Group) *echo.Group {
 	return getDefaultServer().SetupEchoGroup(group)
 }
 
-func MakeJwtHandler(secret string) echo.MiddlewareFunc {
-	return getDefaultServer().MakeJwtHandler(secret)
+func MakeJwtHandler() echo.MiddlewareFunc {
+	return getDefaultServer().MakeJwtHandler()
 }
 
 func MakeLoginHandler() echo.MiddlewareFunc {

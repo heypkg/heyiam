@@ -15,9 +15,6 @@ type AccessClaims struct {
 }
 
 func CreateTokenWithClaims(secret string, claims jwt.Claims) (string, error) {
-	if secret == "" {
-		secret = "heypkg2023!!"
-	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	t, err := token.SignedString([]byte(secret))
 	if err != nil {

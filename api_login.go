@@ -1,6 +1,7 @@
 package iam
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -13,28 +14,28 @@ import (
 	"go.uber.org/zap"
 )
 
-func (s *IAMServer) MakeJwtHandler(secret string) echo.MiddlewareFunc {
+func (s *IAMServer) MakeJwtHandler() echo.MiddlewareFunc {
 	config := echojwt.Config{
 		NewClaimsFunc: func(c echo.Context) jwt.Claims {
 			return new(AccessClaims)
 		},
-		SigningKey:  []byte(secret),
+		SigningKey:  []byte(defaultSecret),
 		TokenLookup: "header:Authorization:Bearer ,query:token",
-		// BeforeFunc: func(c echo.Context) {
-		// 	req := c.Request()
-		// 	auth := fmt.Sprintf("%v", req.Header["Authorization"][0])
-		// 	auth = strings.ReplaceAll(auth, "Bearer ", "")
-		// 	claims := &AccessClaims{}
-		// 	fmt.Printf("!!!!!     %v\n", auth)
-		// 	token, err := jwt.ParseWithClaims(auth, claims, func(token *jwt.Token) (interface{}, error) {
-		// 		return []byte(secret), nil
-		// 	})
-		// 	if err != nil {
-		// 		fmt.Printf("!!!!!     %v\n", err.Error())
-		// 	}
-		// 	fmt.Printf("!!!!!     %v\n", claims)
-		// 	fmt.Printf("!!!!!     %v\n", token)
-		// },
+		BeforeFunc: func(c echo.Context) {
+			req := c.Request()
+			auth := fmt.Sprintf("%v", req.Header["Authorization"][0])
+			auth = strings.ReplaceAll(auth, "Bearer ", "")
+			claims := &AccessClaims{}
+			fmt.Printf("!!!!!     %v\n", auth)
+			token, err := jwt.ParseWithClaims(auth, claims, func(token *jwt.Token) (interface{}, error) {
+				return []byte(defaultSecret), nil
+			})
+			if err != nil {
+				fmt.Printf("!!!!!     %v\n", err.Error())
+			}
+			fmt.Printf("!!!!!     %v\n", claims)
+			fmt.Printf("!!!!!     %v\n", token)
+		},
 	}
 	return echojwt.WithConfig(config)
 }
@@ -124,7 +125,7 @@ func (s *IAMServer) HandleAuthenticate(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusUnauthorized, "invalid username or password")
 	}
 
-	token, err := CreateLoginToken("", data.Username, time.Hour*8)
+	token, err := CreateLoginToken(defaultSecret, data.Username, time.Hour*8)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, err.Error())
 	}
