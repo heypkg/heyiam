@@ -1,73 +1,65 @@
 package iam
 
-import (
-	"sync"
-	"time"
+// var defaultServer *IAMServer
+// var defaultServerMutex sync.Mutex
+// var defaultSecret string = "heypkg2023!!"
 
-	"github.com/labstack/echo/v4"
-	"gorm.io/gorm"
-)
+// func Setup(db *gorm.DB, dataRetentionPeriod time.Duration,
+// 	enforcerDriverName string, enforcerDataSourceName string, secret string, rules map[string]ApiRule) {
+// 	defaultServerMutex.Lock()
+// 	defer defaultServerMutex.Unlock()
+// 	defaultSecret = secret
+// 	defaultServer = NewIAMServer(db, dataRetentionPeriod, enforcerDriverName, enforcerDataSourceName, rules)
+// }
 
-var defaultServer *IAMServer
-var defaultServerMutex sync.Mutex
-var defaultSecret string = "heypkg2023!!"
+// func SetupEchoGroup(group *echo.Group) *echo.Group {
+// 	return getDefaultServer().SetupEchoGroup(group)
+// }
 
-func Setup(db *gorm.DB, dataRetentionPeriod time.Duration,
-	enforcerDriverName string, enforcerDataSourceName string, secret string, rules map[string]ApiRule) {
-	defaultServerMutex.Lock()
-	defer defaultServerMutex.Unlock()
-	defaultSecret = secret
-	defaultServer = NewIAMServer(db, dataRetentionPeriod, enforcerDriverName, enforcerDataSourceName, rules)
-}
+// func MakeJwtHandler() echo.MiddlewareFunc {
+// 	return getDefaultServer().MakeJwtHandler()
+// }
 
-func SetupEchoGroup(group *echo.Group) *echo.Group {
-	return getDefaultServer().SetupEchoGroup(group)
-}
+// func MakeLoginHandler() echo.MiddlewareFunc {
+// 	return getDefaultServer().MakeAuditLogHandler()
+// }
 
-func MakeJwtHandler() echo.MiddlewareFunc {
-	return getDefaultServer().MakeJwtHandler()
-}
+// func MakeAuditLogHandler() echo.MiddlewareFunc {
+// 	return getDefaultServer().MakeAuditLogHandler()
+// }
 
-func MakeLoginHandler() echo.MiddlewareFunc {
-	return getDefaultServer().MakeAuditLogHandler()
-}
+// func HandleAuthenticate(c echo.Context) error {
+// 	return getDefaultServer().HandleAuthenticate(c)
+// }
 
-func MakeAuditLogHandler() echo.MiddlewareFunc {
-	return getDefaultServer().MakeAuditLogHandler()
-}
+// func getDefaultServer() *IAMServer {
+// 	return defaultServer
+// }
 
-func HandleAuthenticate(c echo.Context) error {
-	return getDefaultServer().HandleAuthenticate(c)
-}
+// func SetupAdmin(schema string, password string) error {
+// 	return getDefaultServer().SetupAdmin(schema, password)
+// }
 
-func getDefaultServer() *IAMServer {
-	return defaultServer
-}
+// func CreateUser(schema, name string, alias string, password string) (*User, error) {
+// 	return getDefaultServer().CreateUser(schema, name, alias, password)
+// }
 
-func SetupAdmin(schema string, password string) error {
-	return getDefaultServer().SetupAdmin(schema, password)
-}
+// func CreateDefaultUser(schema, name string, alias string, password string) (*User, error) {
+// 	return getDefaultServer().CreateDefaultUser(schema, name, alias, password)
+// }
 
-func CreateUser(schema, name string, alias string, password string) (*User, error) {
-	return getDefaultServer().CreateUser(schema, name, alias, password)
-}
+// func CreateRole(schema string, name string, alias string, patterns []string) (*Role, error) {
+// 	return getDefaultServer().CreateRole(schema, name, alias, patterns)
+// }
 
-func CreateDefaultUser(schema, name string, alias string, password string) (*User, error) {
-	return getDefaultServer().CreateDefaultUser(schema, name, alias, password)
-}
+// func CreateDefaultRole(schema string, name string, alias string, patterns []string) (*Role, error) {
+// 	return getDefaultServer().CreateDefaultRole(schema, name, alias, patterns)
+// }
 
-func CreateRole(schema string, name string, alias string, patterns []string) (*Role, error) {
-	return getDefaultServer().CreateRole(schema, name, alias, patterns)
-}
+// func AddRoleForUser(domain string, user string, role string) (bool, error) {
+// 	return getDefaultServer().AddRoleForUser(domain, user, role)
+// }
 
-func CreateDefaultRole(schema string, name string, alias string, patterns []string) (*Role, error) {
-	return getDefaultServer().CreateDefaultRole(schema, name, alias, patterns)
-}
-
-func AddRoleForUser(domain string, user string, role string) (bool, error) {
-	return getDefaultServer().AddRoleForUser(domain, user, role)
-}
-
-func AddRolesForUser(domain string, user string, roles []string) (bool, error) {
-	return getDefaultServer().AddRolesForUser(domain, user, roles)
-}
+// func AddRolesForUser(domain string, user string, roles []string) (bool, error) {
+// 	return getDefaultServer().AddRolesForUser(domain, user, roles)
+// }

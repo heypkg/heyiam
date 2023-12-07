@@ -15,6 +15,7 @@ import (
 
 type IAMServer struct {
 	logger      *zap.Logger
+	secret      string
 	db          *gorm.DB
 	apiRulesMap map[string]ApiRule
 
@@ -27,9 +28,11 @@ type IAMServer struct {
 }
 
 func NewIAMServer(db *gorm.DB, dataRetentionPeriod time.Duration,
-	enforcerDriverName string, enforcerDataSourceName string, rules map[string]ApiRule) *IAMServer {
+	enforcerDriverName string, enforcerDataSourceName string,
+	secret string, rules map[string]ApiRule) *IAMServer {
 
 	s := IAMServer{
+		secret:      secret,
 		logger:      zap.L().Named("iam"),
 		db:          db,
 		apiRulesMap: defaultApiRulesMap,

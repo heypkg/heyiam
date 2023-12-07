@@ -15,7 +15,7 @@ import (
 
 func (s *IAMServer) MakeJwtHandler() echo.MiddlewareFunc {
 	config := echojwt.Config{
-		SigningKey:  []byte(defaultSecret),
+		SigningKey:  []byte(s.secret),
 		TokenLookup: "header:Authorization:Bearer ,query:token",
 		// BeforeFunc: func(c echo.Context) {
 		// 	req := c.Request()
@@ -146,7 +146,7 @@ func (s *IAMServer) HandleAuthenticate(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusUnauthorized, "invalid username or password")
 	}
 
-	token, err := CreateLoginToken(defaultSecret, data.Username, time.Hour*8)
+	token, err := CreateLoginToken(s.secret, data.Username, time.Hour*8)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, err.Error())
 	}
