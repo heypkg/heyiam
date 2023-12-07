@@ -22,6 +22,7 @@ func CreateAccessToken(secret string, accessKey string, expires time.Duration) (
 		"exp": jwt.NewNumericDate(time.Now().Add(expires)),
 		"ak":  accessKey,
 	}
+
 	return CreateTokenWithClaims(secret, claims)
 }
 

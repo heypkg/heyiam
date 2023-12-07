@@ -64,8 +64,8 @@ func (s *IAMServer) MakeLoginHandler() echo.MiddlewareFunc {
 			if expire.Time.Before(now) {
 				return echo.NewHTTPError(http.StatusUnauthorized, "expired")
 			}
-			accessKey := claims["ak"].(string)
-			username := claims["un"].(string)
+			accessKey := cast.ToString(claims["ak"])
+			username := cast.ToString(claims["un"])
 			logger.Warn("!!!!!!",
 				zap.String("accessKey", accessKey),
 				zap.String("username", username),
