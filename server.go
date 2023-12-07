@@ -42,7 +42,10 @@ func NewIAMServer(db *gorm.DB, dataRetentionPeriod time.Duration,
 
 	s.setup(dataRetentionPeriod)
 	s.setupEnforcer()
+	s.logger.Info("setup enforcer")
+
 	s.setupApiRules(rules)
+	s.logger.Info("setup rules")
 	return &s
 }
 
