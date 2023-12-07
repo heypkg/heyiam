@@ -44,9 +44,7 @@ func (s *IAMServer) MakeLoginHandler() echo.MiddlewareFunc {
 		return func(c echo.Context) error {
 			now := time.Now()
 			path := c.Path()
-			logger.Warn("!!!!!!",
-				zap.String("path", path),
-			)
+
 			token, err := GetTokenFromEchoContext(c)
 			if err != nil {
 				return echo.NewHTTPError(http.StatusUnauthorized, "no token")
@@ -68,11 +66,7 @@ func (s *IAMServer) MakeLoginHandler() echo.MiddlewareFunc {
 			fmt.Printf("%v\n", claims)
 			accessKey := cast.ToString(claims["ak"])
 			username := cast.ToString(claims["un"])
-			logger.Warn("!!!!!!",
-				zap.String("accessKey", accessKey),
-				zap.String("username", username),
-				zap.String("path", path),
-			)
+
 			if username != "" {
 				schema, name := ParseSchemaAndName(username)
 				var user = User{}
