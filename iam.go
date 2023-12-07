@@ -20,15 +20,6 @@ func Setup(db *gorm.DB, dataRetentionPeriod time.Duration,
 	defaultServer = NewIAMServer(db, dataRetentionPeriod, enforcerDriverName, enforcerDataSourceName, rules)
 }
 
-// @title IAM API
-// @version 1.0
-// @host dev.netdoop.com
-// @BasePath /api/v1
-// @schemes http
-// @securityDefinitions.apikey Bearer
-// @in header
-// @name Authorization
-// @description Type "Bearer" followed by a space and JWT token.
 func SetupEchoGroup(group *echo.Group) *echo.Group {
 	return getDefaultServer().SetupEchoGroup(group)
 }

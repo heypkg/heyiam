@@ -15,9 +15,6 @@ import (
 
 func (s *IAMServer) MakeJwtHandler() echo.MiddlewareFunc {
 	config := echojwt.Config{
-		NewClaimsFunc: func(c echo.Context) jwt.Claims {
-			return new(AccessClaims)
-		},
 		SigningKey:  []byte(defaultSecret),
 		TokenLookup: "header:Authorization:Bearer ,query:token",
 		// BeforeFunc: func(c echo.Context) {
@@ -44,14 +41,31 @@ func (s *IAMServer) MakeLoginHandler() echo.MiddlewareFunc {
 		logger := s.logger
 		db := s.db
 		return func(c echo.Context) error {
+			now := time.Now()
 			path := c.Path()
-			token := GetTokenFromEchoContext(c)
-			if token == nil {
-				return echo.NewHTTPError(http.StatusUnauthorized, "unauthorized")
+			logger.Warn("!!!!!!",
+				zap.String("path", path),
+			)
+			token, err := GetTokenFromEchoContext(c)
+			if err != nil {
+				return echo.NewHTTPError(http.StatusUnauthorized, "no token")
 			}
-			claims := token.Claims.(*AccessClaims)
-			accessKey := claims.AccessKey
-			username := claims.Username
+			if !token.Valid {
+				return echo.NewHTTPError(http.StatusUnauthorized, "invalid token")
+			}
+			claims, ok := token.Claims.(jwt.MapClaims)
+			if !ok {
+				return echo.NewHTTPError(http.StatusUnauthorized, "invalid claims")
+			}
+			expire, err := claims.GetExpirationTime()
+			if err != nil {
+				return echo.NewHTTPError(http.StatusUnauthorized, errors.Wrap(err, "get expiration time"))
+			}
+			if expire.Time.Before(now) {
+				return echo.NewHTTPError(http.StatusUnauthorized, "expired")
+			}
+			accessKey := claims["ak"].(string)
+			username := claims["un"].(string)
 			logger.Warn("!!!!!!",
 				zap.String("accessKey", accessKey),
 				zap.String("username", username),
