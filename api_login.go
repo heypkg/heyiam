@@ -1,7 +1,6 @@
 package iam
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -63,7 +62,6 @@ func (s *IAMServer) MakeLoginHandler() echo.MiddlewareFunc {
 			if expire.Time.Before(now) {
 				return echo.NewHTTPError(http.StatusUnauthorized, "expired")
 			}
-			fmt.Printf("%v\n", claims)
 			accessKey := cast.ToString(claims["ak"])
 			username := cast.ToString(claims["un"])
 
