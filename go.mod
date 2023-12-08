@@ -6,7 +6,7 @@ require (
 	github.com/Blank-Xu/sqlx-adapter v0.0.0-20230423090211-0a30309eefa6
 	github.com/casbin/casbin/v2 v2.79.0
 	github.com/golang-jwt/jwt/v5 v5.1.0
-	github.com/heypkg/store v0.1.0-dev
+	github.com/heypkg/store v0.1.0
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/labstack/echo-jwt/v4 v4.2.0
 	github.com/labstack/echo/v4 v4.11.3
